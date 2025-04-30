@@ -1,0 +1,33 @@
+templates/index.html
+Você está a um passo de andar protegido 
+Trazendo segurança nas ruas do nosso Recife a mais de 20 anos! Enviaremos em instantes sua cotação personalizada! 
+Vamos gerar sua cotação!
+{% if error %} 
+{{ error }}
+{% endif %} {% if warning %} 
+{{ warning }}
+{% endif %} {% if success %} 
+{{ success }}
+{% endif %} 
+Nome do Cliente*  
+Placa do Veículo*  
+Marca*  
+Modelo*  
+Ano Modelo* 
+Valor FIPE (R$)* Consulte o valor FIPE em placafipe.com.br 
+Categoria (Opcional)  
+Gerar Cotação 
+{% if pdf_path %} 
+Cotação Gerada com Sucesso!
+Sua cotação personalizada está pronta para download:
+Baixar Cotação em PDF 
+{% endif %} 
+Por que eu devo escolher a Bravax Protege?
+Assistência 24h
+Assistência 24 horas para garantir a segurança do seu veículo a qualquer momento.
+Segurança
+Você mais tranquilo com a proteção total do seu veículo sem burocracia.
+Agilidade
+Imediatamente após a adesão* o seu veículo já está protegido.
+*A adesão consiste em ter a assinatura do contrato, pagamento da adesão e vistoria. 
+
