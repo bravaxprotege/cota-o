@@ -1,4 +1,4 @@
-# ----- INÍCIO DO CÓDIGO PARA preenche_cotacao.py -----
+# ----- INÍCIO DO CÓDIGO COMPLETO E CORRIGIDO PARA preenche_cotacao.py -----
 import sys
 # Linha específica do ambiente Render/Manus, pode manter se necessário
 sys.path.append("/opt/.manus/.sandbox-runtime") 
@@ -37,7 +37,7 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
                 return None
             slide = prs.slides[slide_index]
             for shape in slide.shapes:
-                # Comparar nomes ignorando maiúsculas/minúsculas e espaços extras? (Mais robusto)
+                # Comparar nomes ignorando maiúsculas/minúsculas e espaços extras (mais robusto)
                 if shape.name.strip().lower() == shape_name_to_find.strip().lower(): 
                     if shape.has_text_frame:
                         print(f"  Encontrada forma '{shape.name}' (buscando por '{shape_name_to_find}') no slide {slide_index+1}.")
@@ -129,16 +129,17 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
         tf = find_shape(6, "platinium") # Confirmar nome exato da shape (é 'platinium' ou 'platinum'?)
         set_text(tf, format_currency_manual(precos.get('Platinum'))) 
         
-        # --- PONTOS FALTANDO ---
-        # 1. Plano Pesados: Onde ele deve ir (slide e nome da shape)?
+        # --- PONTOS FALTANDO (Onde colocar estes?) ---
+        # 1. Plano Pesados: 
         preco_pesados = format_currency_manual(precos.get('Pesados'))
-        print(f"Valor Pesados (não inserido): {preco_pesados}")
+        if preco_pesados != "N/A": # Só imprime se houver valor
+             print(f"Valor Pesados (NÃO INSERIDO - Definir Slide/Shape): {preco_pesados}")
         # Exemplo: tf_pesados = find_shape(INDICE_SLIDE_PESADOS, "NOME_SHAPE_PESADOS")
         #         set_text(tf_pesados, preco_pesados)
         
-        # 2. Aviso de Aprovação: Onde ele deve ir (slide e nome da shape)?
+        # 2. Aviso de Aprovação: 
         if sujeito_aprovacao:
-             print("AVISO: Cotação sujeita à aprovação (local para inserir não definido).")
+             print("AVISO: Cotação sujeita à aprovação (NÃO INSERIDO - Definir Slide/Shape).")
              # Exemplo: tf_aviso = find_shape(INDICE_SLIDE_AVISO, "NOME_SHAPE_AVISO")
              #         set_text(tf_aviso, "*Sujeito à aprovação da diretoria*", is_warning=True)
 
@@ -148,61 +149,70 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
         print(f"Cotação salva com sucesso em: {output_path}")
         return True
 
-    # except FileNotFoundError: # Não deve mais ocorrer se o path e nome estiverem certos
+    # except FileNotFoundError: # Este erro não deve ocorrer se o path e nome estiverem certos
     #     print(f"Erro CRÍTICO: Template não encontrado em {template_path}")
     #     return False
+    # Captura PackageNotFoundError especificamente, além de outros erros
+    except Presentation.PackageNotFoundError as pe:
+         print(f"ERRO ao ABRIR/LER o template PowerPoint: {pe}")
+         print("Verifique se o arquivo .pptx não está corrompido ou se é um formato válido.")
+         traceback.print_exc()
+         return False
     except Exception as e:
         print(f"ERRO GERAL ao preencher o PowerPoint: {e}")
         traceback.print_exc() # Imprime o traceback detalhado no log
         return False
 
-# --- Bloco de Teste (Não essencial para o Render, mas útil para teste local) ---
+# --- Bloco de Teste Corrigido (Com Indentação Certa) ---
 if __name__ == "__main__":
+    # Nível 1 (4 espaços)
     try:
-        # Tenta importar a função de cálculo de preços que deve estar no mesmo nível
+        # Nível 2 (8 espaços)
         from calculo_precos import calcular_precos_planos 
         print("INFO: Função calcular_precos_planos importada para teste.")
     except ImportError:
-         print("AVISO: calculo_precos.py não encontrado ou erro na importação para teste local.")
-         calcular_precos_planos = None # Define como None para evitar erro abaixo
+        # Nível 2 (8 espaços)
+        print("AVISO: calculo_precos.py não encontrado ou erro na importação para teste local.")
+        calcular_precos_planos = None 
+    
+    # Nível 1 (4 espaços)
+    if calcular_precos_planos: 
+        # Nível 2 (8 espaços)
+        valores_fipe_teste = [74442.0, 105000.0]
+        # Caminhos relativos para teste local (ajuste se sua estrutura for diferente)
+        # Tentando encontrar input_files no mesmo nível ou um acima
+        input_dir_teste = "input_files"
+        if not os.path.isdir(input_dir_teste) and os.path.isdir(os.path.join("..", "input_files")):
+             input_dir_teste = os.path.join("..", "input_files")
+        
+        arquivo_tabela = os.path.join(input_dir_teste, "Tabela 2023.xlsx") 
+        template_pptx = os.path.join(input_dir_teste, "cotacao_auto.pptx") # Usar o nome SEM acento
 
-    if calcular_precos_planos: # Só executa se conseguiu importar
-         # Dados de exemplo 
-         valores_fipe_teste = [74442.0, 105000.0]
-         # Caminhos relativos ao script preenche_cotacao.py se executado diretamente
-         # Assume que input_files está um nível ACIMA de onde este script está, 
-         # ou no mesmo nível se você rodar da raiz do projeto. 
-         # Ajuste se necessário para seu teste local.
-         arquivo_tabela = os.path.join("..", "input_files", "Tabela 2023.xlsx") 
-         template_pptx = os.path.join("..", "input_files", "cotacao_auto.pptx") # Usar o nome SEM acento
+        output_dir_teste = "./output_teste_local"
+        os.makedirs(output_dir_teste, exist_ok=True)
+        
+        # Nível 2 (8 espaços)
+        for i, valor_fipe_teste in enumerate(valores_fipe_teste):
+            # Nível 3 (12 espaços)
+            placa_teste = f"XYZ123{i}"
+            output_pptx = os.path.join(output_dir_teste, f"cotacao_{placa_teste}_teste.pptx") 
 
-         # Tenta criar uma pasta output no diretório atual para os testes
-         output_dir_teste = "./output_teste_local"
-         os.makedirs(output_dir_teste, exist_ok=True)
-         
-         for i, valor_fipe_teste in enumerate(valores_fipe_teste):
-             placa_teste = f"XYZ123{i}"
-             # Salvar output na pasta de teste criada
-             output_pptx = os.path.join(output_dir_teste, f"cotacao_{placa_teste}_teste.pptx") 
-
-             print(f"\n--- Testando Preenchimento com FIPE: {valor_fipe_teste} ---")
+            print(f"\n--- Testando Preenchimento com FIPE: {valor_fipe_teste} ---")
              
-             # Verifica se arquivos de teste existem ANTES de calcular
-             if not os.path.exists(arquivo_tabela):
-                 print(f"ERRO no teste: Arquivo Tabela não encontrado em {arquivo_tabela}")
-                 continue
-             if not os.path.exists(template_pptx):
-                  print(f"ERRO no teste: Arquivo Template não encontrado em {template_pptx}")
-                  continue
+            if not os.path.exists(arquivo_tabela):
+                print(f"ERRO no teste: Arquivo Tabela não encontrado em {arquivo_tabela}")
+                continue
+            if not os.path.exists(template_pptx):
+                print(f"ERRO no teste: Arquivo Template não encontrado em {template_pptx}")
+                continue
 
-             print(f"Calculando preços para FIPE: {valor_fipe_teste}")
-             precos_calculados = calcular_precos_planos(valor_fipe_teste, arquivo_tabela)
+            print(f"Calculando preços para FIPE: {valor_fipe_teste}")
+            precos_calculados = calcular_precos_planos(valor_fipe_teste, arquivo_tabela)
 
-            # (Isso ainda está dentro do 'for i, valor_fipe_teste...' no seu código)
-            # Certifique-se que a linha abaixo está com 2 níveis de indentação (8 espaços)
-                if precos_calculados: 
-                # As linhas abaixo devem ter 3 níveis de indentação (12 espaços)
-                    dados_para_preencher = { 
+            # Nível 3 (12 espaços)
+            if precos_calculados: 
+                # Nível 4 (16 espaços)
+                dados_para_preencher = { 
                     "nome_cliente": f"Cliente Teste {i}",
                     "placa": placa_teste,
                     "marca": "Marca Teste",
@@ -215,24 +225,23 @@ if __name__ == "__main__":
 
                 print("\nIniciando preenchimento do PowerPoint...") 
                 sucesso = preencher_cotacao_pptx(template_pptx, output_pptx, dados_para_preencher) 
-                # Este 'if' deve ter 3 níveis de indentação (12 espaços)
+                # Nível 4 (16 espaços)
                 if sucesso: 
-                    # As linhas abaixo devem ter 4 níveis de indentação (16 espaços)
+                    # Nível 5 (20 espaços)
                     print(f"Preenchimento do PowerPoint para {placa_teste} concluído com sucesso.") 
                     print(f"Arquivo de teste salvo em: {os.path.abspath(output_pptx)}") 
-                # Este 'else' deve estar alinhado com o 'if sucesso:' (3 níveis / 12 espaços)
+                # Nível 4 (16 espaços)
                 else: 
-                    # A linha abaixo deve ter 4 níveis de indentação (16 espaços)
+                    # Nível 5 (20 espaços)
                     print(f"Falha ao preencher o PowerPoint para {placa_teste}.") 
-            # Este 'else' deve estar alinhado com o 'if precos_calculados:' (2 níveis / 8 espaços)
+            # Nível 3 (12 espaços)
             else: 
-                # A linha abaixo deve ter 3 níveis de indentação (12 espaços)
+                # Nível 4 (16 espaços)
                 print("Não foi possível calcular os preços para preencher o PowerPoint.") 
 
-    # Este 'else' final deve estar alinhado com 'if calcular_precos_planos:' lá do início do bloco __main__ (1 nível / 4 espaços)
+    # Nível 1 (4 espaços)
     else: 
-        # A linha abaixo deve ter 2 níveis de indentação (8 espaços)
+        # Nível 2 (8 espaços)
         print("Pular teste local pois calculo_precos não foi importado.")
 
-# ----- FIM DO CÓDIGO PARA preenche_cotacao.py ----- 
-# !!! APAGUE QUALQUER LINHA DE CÓDIGO QUE ESTIVER ABAIXO DESTE COMENTÁRIO !!!
+# ----- FIM DO CÓDIGO PARA preenche_cotacao.py -----
