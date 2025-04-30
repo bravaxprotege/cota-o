@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copie o restante do código da aplicação
 COPY . .
 
+# Copie os arquivos de entrada explicitamente (garantia)
+COPY input_files/ input_files/
+
 # Crie o diretório de saída se não existir
 RUN mkdir -p /app/output
 
