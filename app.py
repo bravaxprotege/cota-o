@@ -35,7 +35,7 @@ OUTPUT_DIR = os.path.join(APP_ROOT, OUTPUT_DIR_NAME)
 
 # Arquivos específicos de entrada (usando o diretório configurado)
 DATABASE_FILE = os.path.join(INPUT_FILES_DIR, "Tabela 2023.xlsx")
-TEMPLATE_PPTX = os.path.join(INPUT_FILES_DIR, "Cotação auto.pptx")
+TEMPLATE_PPTX = os.path.join(INPUT_FILES_DIR, "cotacao_auto.pptx")
 
 # Guarda o diretório de saída na configuração do Flask (boa prática)
 app.config["OUTPUT_DIR"] = OUTPUT_DIR
