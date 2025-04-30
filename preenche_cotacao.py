@@ -1,9 +1,14 @@
+# ----- INÍCIO DO CÓDIGO PARA preenche_cotacao.py -----
 import sys
-sys.path.append("/opt/.manus/.sandbox-runtime")
+# Linha específica do ambiente Render/Manus, pode manter se necessário
+sys.path.append("/opt/.manus/.sandbox-runtime") 
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
+import traceback # Importar para log de erros
+import os # Importar OS para o bloco de teste funcionar
 
+# --- Função Auxiliar para Formatar Moeda ---
 def format_currency_manual(value):
     """Formata um valor numérico como moeda brasileira (R$) manualmente."""
     if value is None or not isinstance(value, (int, float)):
@@ -14,146 +19,210 @@ def format_currency_manual(value):
     except (TypeError, ValueError):
         return "Valor inválido"
 
+# --- Função Principal Modificada ---
 def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
-    """Preenche um template PowerPoint com dados da cotação e salva.
+    """Preenche um template PowerPoint com dados da cotação em slides específicos e salva."""
+    
+    print(f"Iniciando preenchimento com template: {template_path}")
+    print(f"Dados recebidos: {dados_cotacao}")
 
-    Args:
-        template_path (str): Caminho para o arquivo de template .pptx.
-        output_path (str): Caminho para salvar o arquivo .pptx preenchido.
-        dados_cotacao (dict): Dicionário contendo os dados da cotação, incluindo:
-            - nome_cliente (str)
-            - placa (str)
-            - marca (str)
-            - modelo (str)
-            - ano (int or str)
-            - valor_fipe (float)
-            - categoria (str, opcional)
-            - precos (dict): Dicionário com os preços calculados dos planos 
-                             (e.g., {"Adesão": 150.0, "Plano Ouro": 87.1, ..., "sujeito_aprovacao": False})
-    """
     try:
         prs = Presentation(template_path)
         
-        if len(prs.slides) < 8:
-            print("Erro: O template não tem 8 slides.")
-            return False
-            
-        slide = prs.slides[7] # Slide 8 (índice 7)
-        
-        # Extrair dados do dicionário
-        nome_cliente = dados_cotacao.get("nome_cliente", "Nome não informado")
-        placa = dados_cotacao.get("placa", "Placa não informada")
-        marca = dados_cotacao.get("marca", "")
-        modelo = dados_cotacao.get("modelo", "")
-        ano = dados_cotacao.get("ano", "")
+        # --- Funções Auxiliares Internas ---
+        def find_shape(slide_index, shape_name_to_find):
+            """Encontra uma forma pelo nome em um slide específico."""
+            if slide_index < 0 or slide_index >= len(prs.slides):
+                print(f"AVISO: Slide com índice {slide_index} (número {slide_index+1}) não existe no template.")
+                return None
+            slide = prs.slides[slide_index]
+            for shape in slide.shapes:
+                # Comparar nomes ignorando maiúsculas/minúsculas e espaços extras? (Mais robusto)
+                if shape.name.strip().lower() == shape_name_to_find.strip().lower(): 
+                    if shape.has_text_frame:
+                        print(f"  Encontrada forma '{shape.name}' (buscando por '{shape_name_to_find}') no slide {slide_index+1}.")
+                        return shape.text_frame
+                    else:
+                        print(f"AVISO: Forma '{shape.name}' no slide {slide_index+1} não tem frame de texto.")
+                        return None
+            print(f"AVISO: Forma com nome parecido com '{shape_name_to_find}' não encontrada no slide {slide_index+1}.")
+            return None
+
+        def set_text(text_frame, text_value, font_size=Pt(10), is_warning=False):
+             """Define o texto em um text_frame, limpando o anterior."""
+             if text_frame is None:
+                 # O Aviso já foi dado por find_shape, não precisa repetir aqui
+                 # Apenas não faz nada se a forma não foi encontrada
+                 return 
+             
+             print(f"  Definindo texto '{text_value}' na forma '{text_frame.parent.name}'...") # Log um pouco melhor
+             text_frame.clear()
+             p = text_frame.add_paragraph()
+              # Define o texto diretamente no parágrafo (melhor para formatação geral)
+             p.text = str(text_value)
+             # Ajusta a fonte para todo o parágrafo
+             p.font.size = font_size
+             if is_warning:
+                 p.font.bold = True
+                 p.font.color.rgb = RGBColor(192, 0, 0) # Vermelho escuro
+
+
+        # --- Extração dos Dados ---
+        nome_cliente = dados_cotacao.get("nome_cliente", "N/A")
+        placa = dados_cotacao.get("placa", "N/A")
+        marca = dados_cotacao.get("marca", "N/A")
+        modelo = dados_cotacao.get("modelo", "N/A")
+        ano = dados_cotacao.get("ano", "N/A")
         valor_fipe = dados_cotacao.get("valor_fipe")
-        categoria = dados_cotacao.get("categoria", "N/A") # Categoria pode não ser fornecida
+        categoria = dados_cotacao.get("categoria", "N/A")
         precos = dados_cotacao.get("precos", {})
         sujeito_aprovacao = precos.get("sujeito_aprovacao", False)
+
+        # --- Preenchimento Slide por Slide (Usando os nomes que você passou) ---
         
-        # Construir texto dos preços (Corrigido: usar aspas simples para chaves do dicionário)
-        texto_precos = (
-            f"Adesão: {format_currency_manual(precos.get('Adesão'))}\n"
-            f"Plano Ouro: {format_currency_manual(precos.get('Plano Ouro'))}\n"
-            f"Plano Diamante: {format_currency_manual(precos.get('Diamante'))}\n"
-            f"Plano Platinum: {format_currency_manual(precos.get('Platinum'))}\n"
-            f"Plano Pesados: {format_currency_manual(precos.get('Pesados'))}"
-        )
+        # Slide 1 (Índice 0)
+        print("\n--- Preenchendo Slide 1 (Índice 0) ---")
+        tf = find_shape(0, "Nome associado") 
+        set_text(tf, nome_cliente) 
+
+        # Slide 4 (Índice 3)
+        print("\n--- Preenchendo Slide 4 (Índice 3) ---")
+        tf = find_shape(3, "Nome associado") 
+        set_text(tf, nome_cliente)
+        tf = find_shape(3, "Placa") 
+        set_text(tf, placa)
+        tf = find_shape(3, "Marca carro") # Confirmar nome exato da shape
+        set_text(tf, marca)
+        tf = find_shape(3, "modelo") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, modelo)
+        tf = find_shape(3, "Ano") # Confirmar nome exato da shape
+        set_text(tf, str(ano)) 
+        tf = find_shape(3, "Categoria") # Confirmar nome exato da shape
+        set_text(tf, categoria)
+        tf = find_shape(3, "Valor fipe") # Confirmar nome exato da shape (tem espaço?)
+        set_text(tf, format_currency_manual(valor_fipe))
+
+        # OBS: ASSUMINDO que a chave para o preço da Adesão nos dados é 'Adesão'
+        adesao_valor = format_currency_manual(precos.get('Adesão'))
         
-        # Adicionar aviso se necessário
-        aviso_aprovacao = "\n\n*Sujeito à aprovação da diretoria*" if sujeito_aprovacao else ""
+        # Slide 5 (Índice 4) - Plano Ouro 
+        print("\n--- Preenchendo Slide 5 (Índice 4) - Plano Ouro ---")
+        # ASSUMINDO que a chave para o preço do Plano Ouro nos dados é 'Plano Ouro'
+        tf = find_shape(4, "adesão") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, adesao_valor) 
+        tf = find_shape(4, "ouro") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, format_currency_manual(precos.get('Plano Ouro'))) 
+
+        # Slide 6 (Índice 5) - Plano Diamante
+        print("\n--- Preenchendo Slide 6 (Índice 5) - Plano Diamante ---")
+        # ASSUMINDO que a chave para o preço do Plano Diamante nos dados é 'Diamante'
+        tf = find_shape(5, "adesão") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, adesao_valor) 
+        tf = find_shape(5, "diamante") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, format_currency_manual(precos.get('Diamante')))
+
+        # Slide 7 (Índice 6) - Plano Platinum
+        print("\n--- Preenchendo Slide 7 (Índice 6) - Plano Platinum ---")
+        # ASSUMINDO que a chave para o preço do Plano Platinum nos dados é 'Platinum'
+        tf = find_shape(6, "adesão") # Confirmar nome exato da shape (está minúsculo?)
+        set_text(tf, adesao_valor) 
+        tf = find_shape(6, "platinium") # Confirmar nome exato da shape (é 'platinium' ou 'platinum'?)
+        set_text(tf, format_currency_manual(precos.get('Platinum'))) 
         
-        # Mapeamento de nomes de formas para dados
-        mapeamento = {
-            "CaixaDeTexto 6": nome_cliente,
-            "CaixaDeTexto 7": placa,
-            "CaixaDeTexto 8": f"{marca} {modelo} {ano}".strip(),
-            "CaixaDeTexto 9": f"Valor FIPE: {format_currency_manual(valor_fipe)} | Categoria: {categoria}",
-            "CaixaDeTexto 10": texto_precos + aviso_aprovacao
-        }
+        # --- PONTOS FALTANDO ---
+        # 1. Plano Pesados: Onde ele deve ir (slide e nome da shape)?
+        preco_pesados = format_currency_manual(precos.get('Pesados'))
+        print(f"Valor Pesados (não inserido): {preco_pesados}")
+        # Exemplo: tf_pesados = find_shape(INDICE_SLIDE_PESADOS, "NOME_SHAPE_PESADOS")
+        #         set_text(tf_pesados, preco_pesados)
+        
+        # 2. Aviso de Aprovação: Onde ele deve ir (slide e nome da shape)?
+        if sujeito_aprovacao:
+             print("AVISO: Cotação sujeita à aprovação (local para inserir não definido).")
+             # Exemplo: tf_aviso = find_shape(INDICE_SLIDE_AVISO, "NOME_SHAPE_AVISO")
+             #         set_text(tf_aviso, "*Sujeito à aprovação da diretoria*", is_warning=True)
 
-        formas_encontradas = {shape.name: False for shape in slide.shapes if shape.name in mapeamento}
 
-        for shape in slide.shapes:
-            if shape.name in mapeamento:
-                if shape.has_text_frame:
-                    text_frame = shape.text_frame
-                    text_frame.clear()
-                    p = text_frame.add_paragraph()
-                    
-                    # Dividir o texto em linhas se contiver \n
-                    lines = mapeamento[shape.name].split("\n")
-                    first_line = True
-                    for line in lines:
-                        run = p.add_run()
-                        run.text = line
-                        # Definir tamanho da fonte (ajustar conforme necessário)
-                        run.font.size = Pt(10)
-                        
-                        # Colocar aviso em vermelho e negrito
-                        if sujeito_aprovacao and line.startswith("*Sujeito"):
-                            run.font.bold = True
-                            run.font.color.rgb = RGBColor(192, 0, 0) # Vermelho escuro
-                            
-                        # Adicionar quebra de linha (exceto para a última linha)
-                        if line != lines[-1]:
-                             run.text += "\n"
-                             
-                    formas_encontradas[shape.name] = True
-                    print(f"Preenchendo Forma: {shape.name}")
-                else:
-                    print("Aviso: Forma encontrada, mas não possui frame de texto.")
-
-        for nome, encontrada in formas_encontradas.items():
-            if not encontrada:
-                print("Aviso: Forma não encontrada ou não preenchida no slide 8.")
-
+        print("\n--- Salvando apresentação ---")
         prs.save(output_path)
-        print(f"Cotação salva em: {output_path}")
+        print(f"Cotação salva com sucesso em: {output_path}")
         return True
 
-    except FileNotFoundError:
-        print(f"Erro: Template não encontrado em {template_path}")
-        return False
+    # except FileNotFoundError: # Não deve mais ocorrer se o path e nome estiverem certos
+    #     print(f"Erro CRÍTICO: Template não encontrado em {template_path}")
+    #     return False
     except Exception as e:
-        print(f"Erro ao preencher o PowerPoint: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"ERRO GERAL ao preencher o PowerPoint: {e}")
+        traceback.print_exc() # Imprime o traceback detalhado no log
         return False
 
-# Exemplo de uso (será chamado de outro script posteriormente)
+# --- Bloco de Teste (Não essencial para o Render, mas útil para teste local) ---
 if __name__ == "__main__":
-    from calculo_precos import calcular_precos_planos
+    try:
+        # Tenta importar a função de cálculo de preços que deve estar no mesmo nível
+        from calculo_precos import calcular_precos_planos 
+        print("INFO: Função calcular_precos_planos importada para teste.")
+    except ImportError:
+         print("AVISO: calculo_precos.py não encontrado ou erro na importação para teste local.")
+         calcular_precos_planos = None # Define como None para evitar erro abaixo
 
-    # Dados de exemplo (simulando entrada manual + cálculo)
-    valores_fipe_teste = [74442.0, 105000.0]
-    arquivo_tabela = "input_files/Tabela 2023.xlsx" # Ajustado para usar input_files
-    template_pptx = "input_files/Cotação auto.pptx" # Ajustado para usar input_files
-    
-    for i, valor_fipe_teste in enumerate(valores_fipe_teste):
-        placa_teste = f"XYZ123{i}"
-        output_pptx = f"/home/ubuntu/projeto_cotacao/cotacao_{placa_teste}_teste.pptx"
+    if calcular_precos_planos: # Só executa se conseguiu importar
+         # Dados de exemplo 
+         valores_fipe_teste = [74442.0, 105000.0]
+         # Caminhos relativos ao script preenche_cotacao.py se executado diretamente
+         # Assume que input_files está um nível ACIMA de onde este script está, 
+         # ou no mesmo nível se você rodar da raiz do projeto. 
+         # Ajuste se necessário para seu teste local.
+         arquivo_tabela = os.path.join("..", "input_files", "Tabela 2023.xlsx") 
+         template_pptx = os.path.join("..", "input_files", "cotacao_auto.pptx") # Usar o nome SEM acento
 
-        print(f"\n--- Testando Preenchimento com FIPE: {valor_fipe_teste} ---")
-        print(f"Calculando preços para FIPE: {valor_fipe_teste}")
-        precos_calculados = calcular_precos_planos(valor_fipe_teste, arquivo_tabela)
+         # Tenta criar uma pasta output no diretório atual para os testes
+         output_dir_teste = "./output_teste_local"
+         os.makedirs(output_dir_teste, exist_ok=True)
+         
+         for i, valor_fipe_teste in enumerate(valores_fipe_teste):
+             placa_teste = f"XYZ123{i}"
+             # Salvar output na pasta de teste criada
+             output_pptx = os.path.join(output_dir_teste, f"cotacao_{placa_teste}_teste.pptx") 
 
-        if precos_calculados:
-            dados_para_preencher = {
-                "nome_cliente": f"Cliente Teste {i}",
-                "placa": placa_teste,
-                "marca": "Marca Teste",
-                "modelo": "Modelo Teste",
-                "ano": 2024,
-                "valor_fipe": valor_fipe_teste,
-                "categoria": "PASSEIO",
-                "precos": precos_calculados
-            }
+             print(f"\n--- Testando Preenchimento com FIPE: {valor_fipe_teste} ---")
+             
+             # Verifica se arquivos de teste existem ANTES de calcular
+             if not os.path.exists(arquivo_tabela):
+                 print(f"ERRO no teste: Arquivo Tabela não encontrado em {arquivo_tabela}")
+                 continue
+             if not os.path.exists(template_pptx):
+                  print(f"ERRO no teste: Arquivo Template não encontrado em {template_pptx}")
+                  continue
 
-            print("\nIniciando preenchimento do PowerPoint...")
-            sucesso = preencher_cotacao_pptx(template_pptx, output_pptx, dados_para_preencher)
-            if sucesso:
-                print(f"Preenchimento do PowerPoint para {placa_teste} concluído com sucesso.")
+             print(f"Calculando preços para FIPE: {valor_fipe_teste}")
+             precos_calculados = calcular_precos_planos(valor_fipe_teste, arquivo_tabela)
+
+             if precos_calculados:
+                 dados_para_preencher = {
+                     "nome_cliente": f"Cliente Teste {i}",
+                     "placa": placa_teste,
+                     "marca": "Marca Teste",
+                     "modelo": "Modelo Teste",
+                     "ano": 2024,
+                     "valor_fipe": valor_fipe_teste,
+                     "categoria": "PASSEIO",
+                     "precos": precos_calculados
+                 }
+
+                 print("\nIniciando preenchimento do PowerPoint...")
+                 sucesso = preencher_cotacao_pptx(template_pptx, output_pptx, dados_para_preencher)
+                 if sucesso:
+                     print(f"Preenchimento do PowerPoint para {placa_teste} concluído com sucesso.")
+                     print(f"Arquivo de teste salvo em: {os.path.abspath(output_pptx)}")
+                 else:
+                     print(f"Falha ao preencher o PowerPoint para {placa_teste}.")
+             else:
+                 print("Não foi possível calcular os preços para preencher o PowerPoint.")
+    else:
+        print("Pular teste local pois calculo_precos não foi importado.")
+
+# ----- FIM DO CÓDIGO PARA preenche_cotacao.py -----
             else:
                 print(f"Falha ao preencher o PowerPoint para {placa_teste}.")
         else:
