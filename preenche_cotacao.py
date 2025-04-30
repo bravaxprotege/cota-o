@@ -198,32 +198,41 @@ if __name__ == "__main__":
              print(f"Calculando preços para FIPE: {valor_fipe_teste}")
              precos_calculados = calcular_precos_planos(valor_fipe_teste, arquivo_tabela)
 
-             if precos_calculados:
-                 dados_para_preencher = {
-                     "nome_cliente": f"Cliente Teste {i}",
-                     "placa": placa_teste,
-                     "marca": "Marca Teste",
-                     "modelo": "Modelo Teste",
-                     "ano": 2024,
-                     "valor_fipe": valor_fipe_teste,
-                     "categoria": "PASSEIO",
-                     "precos": precos_calculados
-                 }
+            # (Isso ainda está dentro do 'for i, valor_fipe_teste...' no seu código)
+            # Certifique-se que a linha abaixo está com 2 níveis de indentação (8 espaços)
+            if precos_calculados: 
+                # As linhas abaixo devem ter 3 níveis de indentação (12 espaços)
+                dados_para_preencher = { 
+                    "nome_cliente": f"Cliente Teste {i}",
+                    "placa": placa_teste,
+                    "marca": "Marca Teste",
+                    "modelo": "Modelo Teste",
+                    "ano": 2024,
+                    "valor_fipe": valor_fipe_teste,
+                    "categoria": "PASSEIO",
+                    "precos": precos_calculados
+                }
 
-                 print("\nIniciando preenchimento do PowerPoint...")
-                 sucesso = preencher_cotacao_pptx(template_pptx, output_pptx, dados_para_preencher)
-                 if sucesso:
-                     print(f"Preenchimento do PowerPoint para {placa_teste} concluído com sucesso.")
-                     print(f"Arquivo de teste salvo em: {os.path.abspath(output_pptx)}")
-                 else:
-                     print(f"Falha ao preencher o PowerPoint para {placa_teste}.")
-             else:
-                 print("Não foi possível calcular os preços para preencher o PowerPoint.")
-    else:
+                print("\nIniciando preenchimento do PowerPoint...") 
+                sucesso = preencher_cotacao_pptx(template_pptx, output_pptx, dados_para_preencher) 
+                # Este 'if' deve ter 3 níveis de indentação (12 espaços)
+                if sucesso: 
+                    # As linhas abaixo devem ter 4 níveis de indentação (16 espaços)
+                    print(f"Preenchimento do PowerPoint para {placa_teste} concluído com sucesso.") 
+                    print(f"Arquivo de teste salvo em: {os.path.abspath(output_pptx)}") 
+                # Este 'else' deve estar alinhado com o 'if sucesso:' (3 níveis / 12 espaços)
+                else: 
+                    # A linha abaixo deve ter 4 níveis de indentação (16 espaços)
+                    print(f"Falha ao preencher o PowerPoint para {placa_teste}.") 
+            # Este 'else' deve estar alinhado com o 'if precos_calculados:' (2 níveis / 8 espaços)
+            else: 
+                # A linha abaixo deve ter 3 níveis de indentação (12 espaços)
+                print("Não foi possível calcular os preços para preencher o PowerPoint.") 
+
+    # Este 'else' final deve estar alinhado com 'if calcular_precos_planos:' lá do início do bloco __main__ (1 nível / 4 espaços)
+    else: 
+        # A linha abaixo deve ter 2 níveis de indentação (8 espaços)
         print("Pular teste local pois calculo_precos não foi importado.")
 
-# ----- FIM DO CÓDIGO PARA preenche_cotacao.py -----
-            else:
-                print(f"Falha ao preencher o PowerPoint para {placa_teste}.")
-        else:
-            print("Não foi possível calcular os preços para preencher o PowerPoint.")
+# ----- FIM DO CÓDIGO PARA preenche_cotacao.py ----- 
+# !!! APAGUE QUALQUER LINHA DE CÓDIGO QUE ESTIVER ABAIXO DESTE COMENTÁRIO !!!
