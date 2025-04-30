@@ -200,9 +200,9 @@ if __name__ == "__main__":
 
             # (Isso ainda está dentro do 'for i, valor_fipe_teste...' no seu código)
             # Certifique-se que a linha abaixo está com 2 níveis de indentação (8 espaços)
-            if precos_calculados: 
+                if precos_calculados: 
                 # As linhas abaixo devem ter 3 níveis de indentação (12 espaços)
-                dados_para_preencher = { 
+                    dados_para_preencher = { 
                     "nome_cliente": f"Cliente Teste {i}",
                     "placa": placa_teste,
                     "marca": "Marca Teste",
