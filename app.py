@@ -21,7 +21,7 @@ app.config["OUTPUT_DIR"] = OUTPUT_DIR
 
 # Criar diretório de saída se não existir
 if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
