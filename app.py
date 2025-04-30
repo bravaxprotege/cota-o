@@ -17,28 +17,27 @@ except ImportError as e:
     # raise ImportError(f"Verifique se os arquivos .py auxiliares estão na pasta 'app/': {e}") from e
 
 # Inicializa a aplicação Flask
-app = Flask(__name__) # '__name__' ajuda o Flask a encontrar recursos como templates
+app = Flask(__name__)  # '__name__' ajuda o Flask a encontrar recursos como templates
 
 # --- Configurações ---
 
 # Diretório base da aplicação (onde este arquivo app.py está)
-APP_ROOT = os.path.dirname(os.path.abspath(__file__)) 
+APP_ROOT = os.getcwd()  # Corrigido para refletir a raiz do projeto
 
-# Diretório para arquivos de entrada (ASSUMINDO QUE 'input_files' ESTÁ DENTRO DE 'app/')
-# Se 'input_files' estiver na raiz do projeto (fora de 'app/'), ajuste o path:
-# INPUT_FILES_DIR = os.path.join(os.path.dirname(APP_ROOT), 'input_files') 
+# Diretório para arquivos de entrada (input_files está na raiz do projeto)
 INPUT_FILES_DIR = os.path.join(APP_ROOT, 'input_files')
 
-# Diretório para salvar arquivos gerados (relativo à pasta 'app/')
+# Diretório para salvar arquivos gerados (relativo à raiz do projeto)
 OUTPUT_DIR_NAME = 'generated_files'
 OUTPUT_DIR = os.path.join(APP_ROOT, OUTPUT_DIR_NAME)
 
-# Arquivos específicos de entrada (usando o diretório configurado)
+# Arquivos específicos de entrada
 DATABASE_FILE = os.path.join(INPUT_FILES_DIR, "Tabela 2023.xlsx")
 TEMPLATE_PPTX = os.path.join(INPUT_FILES_DIR, "cotacao_auto.pptx")
 
-# Guarda o diretório de saída na configuração do Flask (boa prática)
+# Guarda o diretório de saída na configuração do Flask
 app.config["OUTPUT_DIR"] = OUTPUT_DIR
+
 
 # --- Criação de Diretórios ---
 
