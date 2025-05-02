@@ -203,7 +203,7 @@ def index():
                     # Tentar limpar PPTX mesmo se PDF falhou? Talvez não.
             else: 
                 # Se preencher_cotacao_pptx retornou False
-                error = f"Erro ao preencher o modelo de cotação. Verifique os
+                error = f"Erro ao preencher o modelo de cotação. Verifique os logs do servidor."
     # O Dockerfile já usa Gunicorn, então este app.run() é mais para teste local
     app.run(host="0.0.0.0", port=port, debug=False)
 
