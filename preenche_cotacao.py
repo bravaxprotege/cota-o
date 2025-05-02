@@ -27,7 +27,7 @@ def format_currency_manual(value):
 # --- Função set_text ATUALIZADA ---
 def set_text(text_frame, text_value, 
              font_size=Pt(22),           # <<< ALTERADO AQUI PARA 22pt <<<
-             font_name='Calibri',        # Mantido Calibri (pode mudar)
+             font_name='Liberation Sans',        # Mantido Calibri (pode mudar)
              alignment=PP_ALIGN.CENTER,  # Mantido Centralizado (pode mudar)
              is_warning=False):
     """Define o texto em um text_frame, limpando o anterior e aplicando formatação."""
