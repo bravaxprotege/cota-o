@@ -1,178 +1,209 @@
+# ----- INÍCIO DO CÓDIGO COMPLETO E CORRIGIDO PARA app.py -----
 import sys
-sys.path.append("/opt/.manus/.sandbox-runtime")
-from flask import Flask, render_template, request, send_from_directory, url_for
+# Linha específica do ambiente Render/Manus, pode manter se necessário
+# sys.path.append("/opt/.manus/.sandbox-runtime") 
+
+from flask import Flask, render_template, request, send_from_directory, url_for, abort
 import os
 import uuid
 import logging # Adicionado para logs mais detalhados
+import traceback # Para log de erros detalhado
 
-# Importar as funções dos scripts criados
-from calculo_precos import calcular_precos_planos
-from preenche_cotacao import preencher_cotacao_pptx
-from converte_pdf import converter_pptx_para_pdf
+# Importar as funções dos scripts criados (Garante que os .py estejam no mesmo nível)
+try:
+    from calculo_precos import calcular_precos_planos
+    from preenche_cotacao import preencher_cotacao_pptx
+    from converte_pdf import converter_pptx_para_pdf
+except ImportError as import_err:
+     # Logar erro crítico se módulos essenciais não forem encontrados
+     logging.exception(f"ERRO CRÍTICO: Falha ao importar módulos locais necessários: {import_err}")
+     # Poderia até levantar o erro para impedir a aplicação de iniciar incorretamente
+     # raise import_err 
 
 app = Flask(__name__)
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configurar logging para um nível útil (INFO ou DEBUG para mais detalhes)
+# A formatação ajuda a identificar a origem das mensagens
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+# Obter o logger específico do Flask para mensagens do Flask/Werkzeug
+# werkzeug_logger = logging.getLogger('werkzeug')
+# werkzeug_logger.setLevel(logging.INFO) 
 
-# Configurações
-# Corrigido: Usar caminhos relativos que funcionarão dentro do container Docker
-INPUT_DIR = "input_files"
+# --- Configurações ---
+# Caminhos relativos ao diretório onde app.py está (/app no container Docker)
+INPUT_DIR = "input_files" 
 OUTPUT_DIR = "output" # Diretório relativo para salvar os arquivos gerados
 DATABASE_FILE = os.path.join(INPUT_DIR, "Tabela 2023.xlsx")
-# Corrigido: Usar o nome de arquivo padronizado mencionado nos logs
-TEMPLATE_PPTX = os.path.join(INPUT_DIR, "cotacao_auto.pptx")
+# Usar o nome de arquivo padronizado (sem acentos, definido anteriormente)
+TEMPLATE_PPTX = os.path.join(INPUT_DIR, "cotacao_auto.pptx") 
 
+# Guarda o diretório de saída na configuração do Flask para fácil acesso
 app.config["OUTPUT_DIR"] = OUTPUT_DIR
+# Guarda o diretório de input também (pode ser útil)
+app.config["INPUT_DIR"] = INPUT_DIR 
 
-# Criar diretório de saída se não existir
-# Isso garante que o diretório exista dentro do container
+# --- Criação de Diretórios na Inicialização ---
+# Garante que o diretório de saída exista DENTRO do container
+# É executado apenas uma vez quando a aplicação inicia
 if not os.path.exists(OUTPUT_DIR):
     try:
         os.makedirs(OUTPUT_DIR)
-        logging.info(f"Diretório de saída criado: {OUTPUT_DIR}")
+        logging.info(f"Diretório de saída criado com sucesso: {OUTPUT_DIR}")
     except OSError as e:
-        logging.error(f"Erro ao criar diretório de saída {OUTPUT_DIR}: {e}")
-        # Considerar lançar uma exceção ou tratar o erro de forma adequada
+        logging.error(f"ERRO CRÍTICO ao criar diretório de saída '{OUTPUT_DIR}': {e}")
+        # Se não conseguir criar o diretório de saída, a aplicação não funcionará
+        raise OSError(f"Não foi possível criar o diretório de saída necessário: {e}") from e
+
+# --- Rotas da Aplicação ---
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """ Rota principal que exibe o formulário e processa a geração da cotação. """
     error = None
     success = None
-    pdf_path_relative = None
-    warning = None # Para avisos como "sujeito à aprovação"
+    pdf_filename = None # Apenas o NOME do arquivo PDF para gerar o link
+    warning = None 
 
     if request.method == "POST":
-        # Capturar todos os dados do formulário
+        logging.info("Recebida requisição POST para /")
+        # Capturar dados do formulário
         nome_cliente = request.form.get("nome")
         placa = request.form.get("placa")
         marca = request.form.get("marca")
         modelo = request.form.get("modelo")
         ano = request.form.get("ano")
         valor_fipe_str = request.form.get("valor_fipe")
-        categoria = request.form.get("categoria", "")  # Campo opcional
+        categoria = request.form.get("categoria", "") 
+
+        logging.info(f"Dados recebidos do formulário: Nome='{nome_cliente}', Placa='{placa}', FIPE_str='{valor_fipe_str}'")
 
         # Validar dados obrigatórios
         if not all([nome_cliente, placa, marca, modelo, ano, valor_fipe_str]):
             error = "Por favor, preencha todos os campos obrigatórios."
-            logging.warning("Tentativa de submissão com campos obrigatórios faltando.")
-            return render_template("index.html", error=error)
+            logging.warning(f"Tentativa de submissão com campos obrigatórios faltando. Dados: {request.form}")
+            # Retorna imediatamente se faltar dados
+            return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
 
         # Converter valores numéricos
         try:
             ano_int = int(ano)
-            valor_fipe = float(valor_fipe_str.replace('.', '').replace(',', '.')) # Tratar formato brasileiro
+            # Tratar formato brasileiro (remove '.' de milhar, troca ',' decimal por '.')
+            valor_fipe_str_limpo = valor_fipe_str.replace('.', '').replace(',', '.')
+            valor_fipe = float(valor_fipe_str_limpo) 
         except ValueError:
-            error = "Ano e Valor FIPE devem ser valores numéricos válidos (ex: 2023, 75000.50)."
-            logging.warning(f"Erro ao converter Ano ({ano}) ou Valor FIPE ({valor_fipe_str}).")
-            return render_template("index.html", error=error)
+            error = "Ano e Valor FIPE devem ser valores numéricos válidos (ex: 2023, 75000.50 ou 75.000,50)."
+            logging.warning(f"Erro ao converter Ano ('{ano}') ou Valor FIPE ('{valor_fipe_str}').")
+            return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
 
-        # Calcular preços dos planos com base no valor FIPE
-        logging.info(f"Calculando preços para valor FIPE: {valor_fipe}")
+        # Calcular preços dos planos
+        logging.info(f"Chamando calcular_precos_planos para FIPE: {valor_fipe} usando DB: {DATABASE_FILE}")
+        precos_info = None # Inicializa como None
         try:
-            precos_info = calcular_precos_planos(valor_fipe, DATABASE_FILE)
-        except FileNotFoundError:
-             error = f"Erro interno: Arquivo da tabela de preços ({DATABASE_FILE}) não encontrado."
-             logging.error(error)
-             return render_template("index.html", error=error)
+            # Verifica se o arquivo DB existe antes de chamar
+            if not os.path.exists(DATABASE_FILE):
+                 error = f"Erro interno: Arquivo da tabela de preços ({DATABASE_FILE}) não encontrado no servidor."
+                 logging.error(error)
+            else:
+                 precos_info = calcular_precos_planos(valor_fipe, DATABASE_FILE)
+
         except Exception as e:
-             error = f"Erro ao calcular preços: {e}"
-             logging.error(error)
-             return render_template("index.html", error=error)
+             error = f"Erro inesperado ao calcular preços: {e}"
+             logging.exception(f"Exceção em calcular_precos_planos:") # Loga o traceback completo
+             # Garante que precos_info é None se houve exceção
+             precos_info = None 
 
-        if precos_info:
-            # Preparar dados para preencher o PowerPoint
-            dados_cotacao = {
-                "nome_cliente": nome_cliente,
-                "placa": placa,
-                "marca": marca,
-                "modelo": modelo,
-                "ano": ano_int, # Usar o valor convertido
-                "valor_fipe": valor_fipe,
-                "categoria": categoria,
-                "precos": precos_info # Passa todo o dicionário retornado
-            }
+        # Verifica se o cálculo retornou preços ou se houve erro antes
+        if error:
+             # Se já houve erro (ex: DB não encontrado, exceção no cálculo), retorna agora
+             return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+        elif not precos_info:
+             # Se não houve exceção mas precos_info é None/vazio (lógica não achou faixa)
+             error = f"Não foi possível encontrar uma faixa de preço para o valor FIPE informado ({valor_fipe}). Verifique a tabela de preços."
+             logging.warning(error)
+             return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
 
-            # Verificar se há aviso de aprovação
-            if precos_info.get("sujeito_aprovacao", False):
-                warning = "Atenção: Esta cotação está sujeita à aprovação da diretoria devido ao valor do veículo."
-                logging.info(f"Cotação para veículo com valor {valor_fipe} sujeita à aprovação.")
+        # Se chegou aqui, precos_info contém os dados calculados
+        logging.info(f"Preços calculados com sucesso: {precos_info}")
+        
+        # Preparar dados para preencher o PowerPoint
+        dados_cotacao = {
+            "nome_cliente": nome_cliente,
+            "placa": placa,
+            "marca": marca,
+            "modelo": modelo,
+            "ano": ano_int, 
+            "valor_fipe": valor_fipe,
+            "categoria": categoria,
+            "precos": precos_info 
+        }
 
-            # Gerar nomes de arquivo únicos para evitar conflitos
-            unique_id = str(uuid.uuid4())[:8]
-            safe_placa = placa.replace(' ', '_').replace('/', '_') # Sanitizar placa para nome de arquivo
-            output_pptx_filename = f"cotacao_{safe_placa}_{unique_id}.pptx"
-            output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf"
+        # Verificar aviso de aprovação
+        if precos_info.get("sujeito_aprovacao", False):
+            warning = "Atenção: Esta cotação está sujeita à aprovação da diretoria devido ao valor do veículo."
+            logging.info(f"Cotação para FIPE {valor_fipe} sujeita à aprovação.")
 
-            output_pptx_path = os.path.join(app.config["OUTPUT_DIR"], output_pptx_filename)
-            output_pdf_path = os.path.join(app.config["OUTPUT_DIR"], output_pdf_filename)
+        # Gerar nomes de arquivo únicos
+        unique_id = str(uuid.uuid4())[:8]
+        safe_placa = placa.replace(' ', '_').replace('/', '_').replace('-', '') # Mais sanitização
+        output_pptx_filename = f"cotacao_{safe_placa}_{unique_id}.pptx"
+        output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf" # Nome esperado do PDF
 
-            # ---- Início da Verificação e Preenchimento do PPTX ----
+        # Caminhos completos dentro do diretório de saída configurado
+        output_pptx_path = os.path.join(app.config["OUTPUT_DIR"], output_pptx_filename)
+        # O caminho completo do PDF será determinado pela função de conversão
+
+        # ---- Bloco Principal: Preencher, Converter, Limpar ----
+        try:
+            # 1. Verificar Template PPTX (os.path.exists)
             logging.info(f"Verificando existência do template: {TEMPLATE_PPTX}")
-            # Adicionado log para listar diretório (conforme sugerido nos seus logs)
+            # Log extra para listar conteúdo (ajuda a depurar se o arquivo está lá)
             try:
                 input_files_list = os.listdir(INPUT_DIR)
                 logging.info(f"Conteúdo de {INPUT_DIR}: {input_files_list}")
-            except Exception as e:
-                logging.error(f"Erro ao listar diretório {INPUT_DIR}: {e}")
+            except Exception as list_e:
+                logging.error(f"Erro ao listar diretório {INPUT_DIR}: {list_e}")
 
             if not os.path.exists(TEMPLATE_PPTX):
                 error = f"Erro interno: Arquivo modelo de cotação ({TEMPLATE_PPTX}) não encontrado."
                 logging.error(error)
-                return render_template("index.html", error=error, warning=warning) # Manter warning se houver
-            # ---- Fim da Verificação ----
+                # Retorna o template mostrando o erro
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename) 
+            
+            # 2. Preencher o PowerPoint
+            logging.info(f"Chamando preencher_cotacao_pptx para salvar em: {output_pptx_path}")
+            sucesso_pptx = preencher_cotacao_pptx(TEMPLATE_PPTX, output_pptx_path, dados_cotacao)
 
-            try:
-                # Preencher o PowerPoint
-                logging.info(f"Preenchendo PPTX: {output_pptx_path} usando template {TEMPLATE_PPTX}")
-                sucesso_pptx = preencher_cotacao_pptx(TEMPLATE_PPTX, output_pptx_path, dados_cotacao)
+            if sucesso_pptx:
+                logging.info(f"PPTX preenchido com sucesso: {output_pptx_path}. Tentando converter para PDF...")
+                
+                # 3. Converter para PDF
+                # Chama a função passando o PPTX gerado e o DIRETÓRIO de saída
+                # Ela retorna o CAMINHO COMPLETO do PDF ou None
+                caminho_pdf_gerado = converter_pptx_para_pdf(output_pptx_path, app.config["OUTPUT_DIR"]) 
 
-                if sucesso_pptx:
-                    # Converter para PDF
-                    logging.info(f"Convertendo para PDF: {output_pdf_path}")
-                    sucesso_pdf = converter_pptx_para_pdf(output_pptx_path, app.config["OUTPUT_DIR"]) # Passar diretório de saída
-
-                    if sucesso_pdf:
-                        success = f"Cotação para {nome_cliente} (placa {placa}) gerada com sucesso!"
-                        pdf_path_relative = os.path.join("output", output_pdf_filename) # Usar nome de arquivo PDF correto
-                        logging.info(f"PDF gerado com sucesso: {pdf_path_relative}")
-                        # Limpar o arquivo pptx intermediário (opcional)
-                        try:
-                            os.remove(output_pptx_path)
-                            logging.info(f"Arquivo PPTX intermediário removido: {output_pptx_path}")
-                        except OSError as e:
-                            logging.warning(f"Erro ao remover arquivo PPTX intermediário: {e}")
-                    else:
-                        error = f"Erro ao converter a cotação para PDF. Verifique os logs do servidor."
-                        logging.error(f"Falha na conversão para PDF para {output_pptx_path}")
+                if caminho_pdf_gerado and os.path.exists(caminho_pdf_gerado): # Verifica se retornou caminho E se o arquivo existe
+                    # Extrai apenas o nome do arquivo do caminho retornado
+                    output_pdf_filename = os.path.basename(caminho_pdf_gerado) 
+                    
+                    success = f"Cotação para {nome_cliente} (placa {placa}) gerada com sucesso!"
+                    # Define apenas o NOME do arquivo para passar ao template (para url_for)
+                    pdf_filename = output_pdf_filename 
+                    logging.info(f"PDF gerado com sucesso: {caminho_pdf_gerado}. Nome relativo para link: {pdf_filename}")
+                    
+                    # 4. Limpar o arquivo pptx intermediário (opcional)
+                    try:
+                        os.remove(output_pptx_path)
+                        logging.info(f"Arquivo PPTX intermediário removido: {output_pptx_path}")
+                    except OSError as e:
+                        logging.warning(f"Não foi possível remover arquivo PPTX intermediário: {e}")
                 else:
-                    error = f"Erro ao preencher o modelo de cotação. Verifique os logs do servidor."
-                    logging.error(f"Falha ao preencher PPTX {output_pptx_path}")
-
-            except Exception as e:
-                error = f"Ocorreu um erro inesperado durante a geração da cotação: {e}"
-                logging.exception("Erro inesperado no processo de geração de cotação:") # Log completo do erro
-
-        else:
-            error = f"Não foi possível encontrar uma faixa de preço para o valor FIPE informado ({valor_fipe}). Verifique a tabela de preços."
-            logging.warning(error)
-
-    return render_template("index.html", error=error, success=success, warning=warning, pdf_path=pdf_path_relative)
-
-@app.route("/output/<path:filename>") # Adicionado <path:> para suportar subdiretórios se necessário
-def download_file(filename):
-    logging.info(f"Tentando servir arquivo para download: {filename} de {app.config['OUTPUT_DIR']}")
-    try:
-        return send_from_directory(app.config["OUTPUT_DIR"], filename, as_attachment=True)
-    except FileNotFoundError:
-        logging.error(f"Arquivo para download não encontrado: {filename} em {app.config['OUTPUT_DIR']}")
-        return "Arquivo não encontrado.", 404
-
-if __name__ == "__main__":
-    # Ouvir em todas as interfaces de rede na porta definida pelo Render (ou 8080 como padrão)
-    port = int(os.environ.get("PORT", 8080))
-    logging.info(f"Iniciando aplicação Flask na porta {port}")
-    # Usar debug=False para produção, True para desenvolvimento
+                    # Se caminho_pdf_gerado for None ou o arquivo não existir, a conversão falhou
+                    error = f"Erro ao converter a cotação para PDF. Verifique os logs do servidor."
+                    logging.error(f"Falha na conversão para PDF (função retornou '{caminho_pdf_gerado}' ou arquivo não existe) para {output_pptx_path}")
+                    # Tentar limpar PPTX mesmo se PDF falhou? Talvez não.
+            else: 
+                # Se preencher_cotacao_pptx retornou False
+                error = f"Erro ao preencher o modelo de cotação. Verifique os
     # O Dockerfile já usa Gunicorn, então este app.run() é mais para teste local
     app.run(host="0.0.0.0", port=port, debug=False)
 
