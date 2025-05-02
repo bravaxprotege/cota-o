@@ -306,13 +306,26 @@
 
             <div class="loading" id="loading">Gerando cotação</div>
 
-            {% if pdf_path %}
+            {# MOSTRAR MENSAGEM DE SUCESSO (SE HOUVER) - Verifique se já não existe antes #}
+            {% if success %}
+                <div class="message success" style="margin-top: 1.5rem;">{{ success }}</div> 
+            {% endif %}
+
+            {# MOSTRAR LINK DE DOWNLOAD (SE pdf_filename EXISTIR) #}
+            {% if pdf_filename %}  {# <-- CORRIGIDO AQUI (usa pdf_filename) #}
             <div class="result-section">
-                <h3>Cotação Gerada com Sucesso!</h3>
+                {# Este H3 é opcional, a mensagem 'success' acima pode ser suficiente
+                <h3>Cotação Gerada com Sucesso!</h3> 
+                #}
                 <p>Sua cotação personalizada está pronta para download:</p>
-                <a href="{{ pdf_path }}" target="_blank">
-                    <button>Baixar Cotação em PDF</button>
+                
+                {# CORRIGIDO AQUI: Usa url_for para criar o link correto #}
+                <a href="{{ url_for('download_file', filename=pdf_filename) }}" target="_blank">
+                    <button type="button">Baixar Cotação em PDF</button> {# Use type="button" para não reenviar o form #}
                 </a>
+                {# Opcional: Mostrar o nome do arquivo baixado
+                <p style="font-size: 0.8em; margin-top: 5px;">Arquivo: {{ pdf_filename }}</p> 
+                #}
             </div>
             {% endif %}
         </div>
