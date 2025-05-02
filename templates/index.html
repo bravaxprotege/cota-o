@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Cotações Bravax</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #e21a1a; /* Vermelho vibrante como fundo principal */
+            color: #333;
+        }
+        
+        .logo-container {
+            background-color: #fff;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .logo {
+            max-height: 60px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        @media (min-width: 992px) {
+            .main-container {
+                flex-direction: row;
+            }
+        }
+        
+        .hero-section {
+            padding: 2rem;
+            color: white;
+            flex: 1;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 1rem;
+            flex: 1;
+            max-width: 500px;
+            align-self: center;
+        }
+        
+        @media (min-width: 992px) {
+            .form-container {
+                margin: 2rem;
+                align-self: flex-start;
+            }
+        }
+        
+        .form-title {
+            color: #555;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: #e21a1a;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(226, 26, 26, 0.2);
+        }
+        
+        button {
+            background-color: #e21a1a;
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #c41616;
+        }
+        
+        a {
+            color: #e21a1a;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .message {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border: 1px solid;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background-color: #fdd;
+            border-color: #e74c3c;
+        }
+        
+        .success {
+            color: #27ae60;
+            background-color: #dff0d8;
+            border-color: #27ae60;
+        }
+        
+        .warning {
+            color: #f39c12;
+            background-color: #fef9e7;
+            border-color: #f39c12;
+        }
+        
+        .result-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .loading {
+            text-align: center;
+            margin: 1rem 0;
+            display: none;
+            color: #e21a1a;
+            font-weight: bold;
+        }
+        
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+        
+        .benefits-section {
+            background-color: #f9f9f9;
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+        
+        .benefits-title {
+            color: #e21a1a;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .benefit-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .benefit-title {
+            color: #e21a1a;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .steps-indicator {
+            display: none; /* Ocultar completamente os indicadores de etapas */
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            font-weight: bold;
+        }
+        
+        .step.active {
+            background-color: #e21a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="hero-section">
+            <div class="hero-title">
+                Você está a um passo de andar protegido
+            </div>
+            <div class="hero-subtitle">
+                Trazendo segurança nas ruas do nosso Recife a mais de 20 anos! Enviaremos em instantes sua cotação personalizada!
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <!-- Steps Indicator Removed -->
+            
+            <h3 class="form-title">Vamos gerar sua cotação!</h3>
+            
+            {% if error %}
+            <div class="message error">{{ error }}</div>
+            {% endif %}
+
+            {% if warning %}
+            <div class="message warning">{{ warning }}</div>
+            {% endif %}
+
+            {% if success %}
+            <div class="message success">{{ success }}</div>
+            {% endif %}
+
+            <form method="POST" action="/">
+                <div class="form-group">
+                    <label for="nome">Nome do Cliente*</label>
+                    <input type="text" id="nome" name="nome" placeholder="Informe o nome do cliente" required>
+                </div>
+                <div class="form-group">
+                    <label for="placa">Placa do Veículo*</label>
+                    <input type="text" id="placa" name="placa" placeholder="Informe a placa do veículo" required>
+                </div>
+                <div class="form-group">
+                    <label for="marca">Marca*</label>
+                    <input type="text" id="marca" name="marca" placeholder="Ex: VW, Fiat, Toyota" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelo">Modelo*</label>
+                    <input type="text" id="modelo" name="modelo" placeholder="Ex: Virtus HL, Corolla" required>
+                </div>
+                <div class="form-group">
+                    <label for="ano">Ano Modelo*</label>
+                    <input type="number" id="ano" name="ano" placeholder="Ex: 2018" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor_fipe">Valor FIPE (R$)*</label>
+                    <input type="number" step="0.01" id="valor_fipe" name="valor_fipe" placeholder="Ex: 74442.00" required>
+                    <small style="display: block; margin-top: 5px; color: #777;">
+                        Consulte o valor FIPE em <a href="https://placafipe.com.br/" target="_blank">placafipe.com.br</a>
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoria (Opcional)</label>
+                    <input type="text" id="categoria" name="categoria" placeholder="Ex: PASSEIO">
+                </div>
+                
+                <button type="submit">Gerar Cotação</button>
+            </form>
+
+            <div class="loading" id="loading">Gerando cotação</div>
+
+            {% if pdf_path %}
+            <div class="result-section">
+                <h3>Cotação Gerada com Sucesso!</h3>
+                <p>Sua cotação personalizada está pronta para download:</p>
+                <a href="{{ pdf_path }}" target="_blank">
+                    <button>Baixar Cotação em PDF</button>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="benefits-section">
+        <h2 class="benefits-title">Por que eu devo escolher a Bravax Protege?</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <h4 class="benefit-title">Assistência 24h</h4>
+                <p>Assistência 24 horas para garantir a segurança do seu veículo a qualquer momento.</p>
+            </div>
+            <div class="benefit-card">
+                <h4 class="benefit-title">Segurança</h4>
+                <p>Você mais tranquilo com a proteção total do seu veículo sem burocracia.</p>
+            </div>
+            <div class="benefit-card">
+                <h4 class="benefit-title">Agilidade</h4>
+                <p>Imediatamente após a adesão* o seu veículo já está protegido.</p>
+                <small>*A adesão consiste em ter a assinatura do contrato, pagamento da adesão e vistoria.</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
