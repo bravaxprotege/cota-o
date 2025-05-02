@@ -2,6 +2,7 @@ import sys
 sys.path.append("/opt/.manus/.sandbox-runtime")
 from pptx import Presentation
 from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 import logging
 
