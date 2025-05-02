@@ -25,7 +25,7 @@ def find_shape_by_name(slide, shape_name):
             return shape
     return None
 
-def fill_text_frame(shape, text, font_size=Pt(10), bold=False, color=None):
+def fill_text_frame(shape, text, font_size=Pt(18), bold=False, color=None):
     """Preenche o frame de texto de uma forma com o texto fornecido."""
     if shape and shape.has_text_frame:
         text_frame = shape.text_frame
