@@ -224,7 +224,7 @@ def index():
     # O return abaixo será executado para GET ou após o POST (com ou sem erro/success)
 
 # Renderiza o template no final, seja GET ou POST, com as variáveis de estado
-return render_template("index.html", 
+    return render_template("index.html", 
                        error=error, 
                        success=success, 
                        warning=warning, 
