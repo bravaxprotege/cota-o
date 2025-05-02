@@ -124,7 +124,7 @@ def index():
 
         # Se chegou aqui, precos_info contém os dados calculados
         logging.info(f"Preços calculados com sucesso: {precos_info}")
-        
+
         # Preparar dados para preencher o PowerPoint
         dados_cotacao = {
             "nome_cliente": nome_cliente,
@@ -153,7 +153,8 @@ def index():
         # O caminho completo do PDF será determinado pela função de conversão
 
         # ---- Bloco Principal: Preencher, Converter, Limpar ----
-        try:
+        # Este bloco try...except engloba todo o processo de geração
+        try: 
             # 1. Verificar Template PPTX (os.path.exists)
             logging.info(f"Verificando existência do template: {TEMPLATE_PPTX}")
             # Log extra para listar conteúdo (ajuda a depurar se o arquivo está lá)
@@ -166,30 +167,25 @@ def index():
             if not os.path.exists(TEMPLATE_PPTX):
                 error = f"Erro interno: Arquivo modelo de cotação ({TEMPLATE_PPTX}) não encontrado."
                 logging.error(error)
-                # Retorna o template mostrando o erro
+                # Retorna o template mostrando o erro (importante retornar DENTRO do try neste caso)
                 return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename) 
-            
+
             # 2. Preencher o PowerPoint
             logging.info(f"Chamando preencher_cotacao_pptx para salvar em: {output_pptx_path}")
             sucesso_pptx = preencher_cotacao_pptx(TEMPLATE_PPTX, output_pptx_path, dados_cotacao)
 
             if sucesso_pptx:
                 logging.info(f"PPTX preenchido com sucesso: {output_pptx_path}. Tentando converter para PDF...")
-                
+
                 # 3. Converter para PDF
-                # Chama a função passando o PPTX gerado e o DIRETÓRIO de saída
-                # Ela retorna o CAMINHO COMPLETO do PDF ou None
                 caminho_pdf_gerado = converter_pptx_para_pdf(output_pptx_path, app.config["OUTPUT_DIR"]) 
 
-                if caminho_pdf_gerado and os.path.exists(caminho_pdf_gerado): # Verifica se retornou caminho E se o arquivo existe
-                    # Extrai apenas o nome do arquivo do caminho retornado
+                if caminho_pdf_gerado and os.path.exists(caminho_pdf_gerado): 
                     output_pdf_filename = os.path.basename(caminho_pdf_gerado) 
-                    
                     success = f"Cotação para {nome_cliente} (placa {placa}) gerada com sucesso!"
-                    # Define apenas o NOME do arquivo para passar ao template (para url_for)
                     pdf_filename = output_pdf_filename 
                     logging.info(f"PDF gerado com sucesso: {caminho_pdf_gerado}. Nome relativo para link: {pdf_filename}")
-                    
+
                     # 4. Limpar o arquivo pptx intermediário (opcional)
                     try:
                         os.remove(output_pptx_path)
@@ -200,10 +196,73 @@ def index():
                     # Se caminho_pdf_gerado for None ou o arquivo não existir, a conversão falhou
                     error = f"Erro ao converter a cotação para PDF. Verifique os logs do servidor."
                     logging.error(f"Falha na conversão para PDF (função retornou '{caminho_pdf_gerado}' ou arquivo não existe) para {output_pptx_path}")
-                    # Tentar limpar PPTX mesmo se PDF falhou? Talvez não.
+                    # Tenta limpar PPTX mesmo se PDF falhou? É seguro pois ele foi gerado.
+                    if os.path.exists(output_pptx_path):
+                        try:
+                            os.remove(output_pptx_path)
+                            logging.info(f"Limpando PPTX intermediário após falha no PDF: {output_pptx_path}")
+                        except:
+                            pass 
             else: 
                 # Se preencher_cotacao_pptx retornou False
                 error = f"Erro ao preencher o modelo de cotação. Verifique os logs do servidor."
-    # O Dockerfile já usa Gunicorn, então este app.run() é mais para teste local
-    app.run(host="0.0.0.0", port=port, debug=False)
+                logging.error(f"Falha reportada por preencher_cotacao_pptx para {output_pptx_path}")
 
+        # Este except corresponde ao 'try' que engloba Preencher/Converter/Limpar
+        except Exception as e:
+            error = f"Ocorreu um erro inesperado durante a geração da cotação."
+            logging.exception(f"Exceção durante preenchimento/conversão:") 
+            # Tenta limpar arquivos intermediários se possível em caso de erro
+            if 'output_pptx_path' in locals() and os.path.exists(output_pptx_path):
+                 try:
+                      os.remove(output_pptx_path)
+                      logging.info(f"Limpando PPTX intermediário após erro: {output_pptx_path}")
+                 except:
+                      pass 
+
+    # Fim do 'if request.method == "POST":'
+    # O return abaixo será executado para GET ou após o POST (com ou sem erro/success)
+
+# Renderiza o template no final, seja GET ou POST, com as variáveis de estado
+return render_template("index.html", 
+                       error=error, 
+                       success=success, 
+                       warning=warning, 
+                       pdf_filename=pdf_filename) # Passa o nome do arquivo PDF
+
+
+@app.route("/output/<path:filename>") 
+def download_file(filename):
+    """ Rota para servir os arquivos PDF gerados. """
+    directory = app.config["OUTPUT_DIR"]
+    logging.info(f"Requisição de download para: {filename} de {directory}")
+    try:
+        # Verifica se o arquivo existe antes de tentar servir
+        file_path = os.path.join(directory, filename)
+        if not os.path.isfile(file_path):
+             logging.error(f"Tentativa de download de arquivo inexistente: {file_path}")
+             abort(404, description="Arquivo não encontrado") # Retorna erro 404
+
+        logging.info(f"Servindo arquivo: {file_path}")
+        return send_from_directory(directory, filename, as_attachment=True)
+
+    except FileNotFoundError:
+        # Segurança extra, embora o check acima deva pegar
+        logging.error(f"Exceção FileNotFoundError ao servir: {filename} de {directory}")
+        abort(404, description="Recurso não encontrado")
+    except Exception as e:
+        logging.exception(f"Erro inesperado ao servir arquivo '{filename}':")
+        abort(500, description="Erro interno ao servir arquivo")
+
+
+if __name__ == "__main__":
+    # Define a porta baseado na variável de ambiente ou usa 8080 como padrão
+    port = int(os.environ.get("PORT", 8080))
+    logging.info(f"Iniciando servidor de desenvolvimento Flask em host 0.0.0.0 na porta {port}")
+    # Executa o servidor de desenvolvimento do Flask
+    # debug=True é útil para desenvolvimento local, mas NUNCA em produção
+    # host='0.0.0.0' permite acesso na rede local
+    # No Render, o Gunicorn definido no Start Command é que será usado.
+    app.run(host="0.0.0.0", port=port, debug=True) # Deixei debug=True para facilitar teste local, mas lembre-se de desativar ou usar Gunicorn para produção real
+
+# ----- FIM DO CÓDIGO PARA app.py -----
