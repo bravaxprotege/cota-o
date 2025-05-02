@@ -26,35 +26,44 @@ def format_currency_manual(value):
 
 # --- Função set_text ATUALIZADA ---
 def set_text(text_frame, text_value, 
-             font_size=Pt(22),           # <<< ALTERADO AQUI PARA 22pt <<<
-             font_name='Liberation Sans',        # Mantido Calibri (pode mudar)
-             alignment=PP_ALIGN.CENTER,  # Mantido Centralizado (pode mudar)
+             font_size=Pt(22),           
+             font_name='Liberation Sans',  # Mantendo a fonte segura
+             alignment=PP_ALIGN.CENTER,  
              is_warning=False):
     """Define o texto em um text_frame, limpando o anterior e aplicando formatação."""
     if text_frame is None:
+        # A função find_shape já logou o aviso se text_frame for None
         return 
-    
-    # Limpa o frame de texto completamente
+
+    # Log ANTES de modificar, sem usar '.parent'
+    # Usar f-string corretamente ou concatenar
+    logging.info(f"  Tentando definir texto: '{text_value}'...") 
+
     text_frame.clear() 
-    # Adiciona um novo parágrafo
     p = text_frame.add_paragraph() 
-      
-    # Define o texto diretamente no parágrafo
     p.text = str(text_value) 
-     
-    # Aplica o ALINHAMENTO e a FONTE ao parágrafo
-    p.alignment = alignment  # Define o alinhamento 
-    p.font.name = font_name  # Define o nome da fonte 
-    p.font.size = font_size  # Define o tamanho da fonte 
-    
-    # Formatação de aviso 
+    p.alignment = alignment
+
+    # Bloco para definir a fonte com tratamento de erro
+    font_final_name = None # Para logar o nome final
+    try:
+        p.font.name = font_name
+        font_final_name = p.font.name # Guarda o nome que foi aplicado (pode ser diferente do solicitado)
+        # logging.info(f"  Fonte definida para: {font_name}") # Log opcional
+    except Exception as font_err:
+        logging.error(f"  ERRO ao definir nome da fonte '{font_name}': {font_err}. Usando fonte padrão.")
+        font_final_name = p.font.name # Loga qual fonte ficou como padrão
+
+    p.font.size = font_size 
     if is_warning:
         p.font.bold = True
         p.font.color.rgb = RGBColor(192, 0, 0)
     else:
          p.font.bold = False 
 
-    logging.info(f"  Definido texto '{text_value}' na forma '{text_frame.parent.name}' | Fonte: {font_name}, Tamanho: {font_size.pt}pt, Align: {alignment}") 
+    # Log no FINAL, sem usar '.parent', mas mostrando a fonte final aplicada
+    # Usar f-string corretamente ou concatenar
+    logging.info(f"  Texto definido. Fonte Aplicada: {font_final_name}, Tamanho: {font_size.pt}pt, Align: {alignment}") 
 
 
 # --- Função Principal preencher_cotacao_pptx (sem alterações na lógica principal) ---
