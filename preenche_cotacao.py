@@ -1,4 +1,4 @@
-# ----- INÍCIO DO CÓDIGO COMPLETO E CORRIGIDO PARA preenche_cotacao.py -----
+# ----- INÍCIO DO CÓDIGO COMPLETO E FINAL PARA preenche_cotacao.py -----
 import sys
 # sys.path.append("/opt/.manus/.sandbox-runtime") 
 from pptx import Presentation
@@ -55,7 +55,7 @@ def set_text(text_frame, text_value,
     # Define o alinhamento HORIZONTAL do parágrafo
     try:
          p.alignment = alignment  
-         # logging.info(f"  Alinhamento horizontal definido para: {alignment}") # Log opcional
+         # logging.info(f"  Alinhamento horizontal definido para: {alignment}") # Log Opcional
     except Exception as general_align_err:
          logging.error(f"  ERRO GERAL ao definir alinhamento horizontal: {general_align_err}")
 
@@ -142,17 +142,17 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
 
         logging.info(f"{log_prefix} Preenchendo Slide 4 (Índice 3)")
         tf = find_shape(3, "Nome associado") 
-        set_text(tf, nome_cliente) 
+        set_text(tf, nome_cliente) # Usa padrões (Left, 22pt)
         tf = find_shape(3, "Placa") 
-        set_text(tf, placa) 
+        set_text(tf, placa) # Usa padrões
         tf = find_shape(3, "Marca carro") 
-        set_text(tf, marca) 
+        set_text(tf, marca) # Usa padrões
         tf = find_shape(3, "modelo") 
-        set_text(tf, modelo) 
+        set_text(tf, modelo) # Usa padrões
         tf = find_shape(3, "Ano") 
-        set_text(tf, str(ano)) 
+        set_text(tf, str(ano)) # Usa padrões
         tf = find_shape(3, "Categoria") 
-        set_text(tf, categoria) 
+        set_text(tf, categoria) # Usa padrões
         tf = find_shape(3, "Valor fipe") 
         # Para o valor FIPE, manter R$ mas usar formatação padrão (Left, 22pt)
         set_text(tf, format_currency_manual(valor_fipe)) 
@@ -202,8 +202,7 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
 
 # --- Bloco de Teste Local (Mantido igual) ---
 if __name__ == "__main__":
-    # ... (código de teste local) ...
-    # Adicionado pass para garantir que bloco não fique vazio se código for removido
-    pass 
+    # ... (código de teste local igual ao anterior) ...
+    pass # Adicionado pass para garantir que bloco não fique vazio se código for removido
 
 # ----- FIM DO CÓDIGO -----
