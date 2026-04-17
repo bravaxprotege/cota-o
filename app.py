@@ -3,11 +3,12 @@ import sys
 # Linha específica do ambiente Render/Manus, pode manter se necessário
 # sys.path.append("/opt/.manus/.sandbox-runtime") 
 
-from flask import Flask, render_template, request, send_from_directory, url_for, abort
+from flask import Flask, render_template, request, send_from_directory, url_for, abort, jsonify
 import os
 import uuid
-import logging # Adicionado para logs mais detalhados
-import traceback # Para log de erros detalhado
+import logging
+import traceback
+import requests as http_requests
 
 # Importar as funções dos scripts criados (Garante que os .py estejam no mesmo nível)
 try:
@@ -53,6 +54,107 @@ if not os.path.exists(OUTPUT_DIR):
         logging.error(f"ERRO CRÍTICO ao criar diretório de saída '{OUTPUT_DIR}': {e}")
         # Se não conseguir criar o diretório de saída, a aplicação não funcionará
         raise OSError(f"Não foi possível criar o diretório de saída necessário: {e}") from e
+
+# --- Helpers para busca FIPE ---
+
+FIPE_BASE = "https://parallelum.com.br/fipe/api/v1/carros"
+
+def _melhor_match(query, items, campo):
+    """Retorna o item da lista cujo campo melhor corresponde ao query."""
+    q = query.upper().strip()
+    # 1. Match exato
+    for item in items:
+        if str(item.get(campo, "")).upper() == q:
+            return item
+    # 2. Query contida no campo
+    for item in items:
+        if q in str(item.get(campo, "")).upper():
+            return item
+    # 3. Todas as palavras do query no campo
+    palavras = q.split()
+    for item in items:
+        campo_upper = str(item.get(campo, "")).upper()
+        if all(p in campo_upper for p in palavras):
+            return item
+    return None
+
+
+def _melhor_ano(ano_str, anos):
+    """Retorna o item de ano que melhor corresponde ao ano fornecido."""
+    for item in anos:
+        if str(ano_str) in str(item.get("nome", "")):
+            return item
+    return None
+
+
+@app.route("/api/buscar-fipe")
+def api_buscar_fipe():
+    """Busca o valor FIPE via API pública (parallelum) dado marca, modelo e ano."""
+    marca = request.args.get("marca", "").strip()
+    modelo = request.args.get("modelo", "").strip()
+    ano = request.args.get("ano", "").strip()
+
+    if not all([marca, modelo, ano]):
+        return jsonify({"erro": "Marca, modelo e ano são obrigatórios"}), 400
+
+    try:
+        # 1. Busca marcas
+        r = http_requests.get(f"{FIPE_BASE}/marcas", timeout=10)
+        r.raise_for_status()
+        marca_match = _melhor_match(marca, r.json(), "nome")
+        if not marca_match:
+            return jsonify({"erro": f"Marca '{marca}' não encontrada na tabela FIPE"}), 404
+
+        # 2. Busca modelos da marca
+        r = http_requests.get(f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos", timeout=10)
+        r.raise_for_status()
+        modelos = r.json().get("modelos", [])
+        modelo_match = _melhor_match(modelo, modelos, "nome")
+        if not modelo_match:
+            return jsonify({"erro": f"Modelo '{modelo}' não encontrado para a marca '{marca_match['nome']}'"}), 404
+
+        # 3. Busca anos do modelo
+        r = http_requests.get(
+            f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos/{modelo_match['codigo']}/anos",
+            timeout=10
+        )
+        r.raise_for_status()
+        anos = r.json()
+        ano_match = _melhor_ano(ano, anos)
+        if not ano_match:
+            return jsonify({"erro": f"Ano '{ano}' não encontrado para o modelo '{modelo_match['nome']}'"}), 404
+
+        # 4. Busca valor FIPE
+        r = http_requests.get(
+            f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos/{modelo_match['codigo']}/anos/{ano_match['codigo']}",
+            timeout=10
+        )
+        r.raise_for_status()
+        dados = r.json()
+
+        # Converte "R$ 74.442,00" para float 74442.0
+        valor_str = dados.get("Valor", "")
+        valor_num = None
+        try:
+            valor_num = float(valor_str.replace("R$", "").replace(".", "").replace(",", ".").strip())
+        except Exception:
+            pass
+
+        return jsonify({
+            "marca": dados.get("Marca"),
+            "modelo": dados.get("Modelo"),
+            "ano": dados.get("AnoModelo"),
+            "valor_fipe_formatado": valor_str,
+            "valor_fipe": valor_num,
+            "codigo_fipe": dados.get("CodigoFipe"),
+        })
+
+    except http_requests.Timeout:
+        return jsonify({"erro": "Timeout ao consultar a tabela FIPE. Tente novamente."}), 504
+    except Exception as e:
+        logging.exception("Erro em api_buscar_fipe:")
+        return jsonify({"erro": "Erro interno ao consultar FIPE"}), 500
+
 
 # --- Rotas da Aplicação ---
 
