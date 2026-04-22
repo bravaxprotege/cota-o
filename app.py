@@ -175,9 +175,19 @@ def index():
         modelo = request.form.get("modelo")
         ano = request.form.get("ano")
         valor_fipe_str = request.form.get("valor_fipe")
-        categoria = request.form.get("categoria", "") 
+        categoria = request.form.get("categoria", "")
+        veiculo_pesado = request.form.get("veiculo_pesado") == "on"
 
-        logging.info(f"Dados recebidos do formulário: Nome='{nome_cliente}', Placa='{placa}', FIPE_str='{valor_fipe_str}'")
+        # Desconto / Acréscimo (protegido por PIN)
+        desconto_pin   = request.form.get("desconto_pin", "")
+        desconto_tipo  = request.form.get("desconto_tipo", "")   # "desconto" ou "acrescimo"
+        desconto_valor = 0.0
+        try:
+            desconto_valor = float(request.form.get("desconto_valor", "0") or 0)
+        except ValueError:
+            desconto_valor = 0.0
+
+        logging.info(f"Dados recebidos: Nome='{nome_cliente}', Placa='{placa}', FIPE='{valor_fipe_str}', Pesado={veiculo_pesado}")
 
         # Validar dados obrigatórios
         if not all([nome_cliente, placa, marca, modelo, ano, valor_fipe_str]):
@@ -227,16 +237,27 @@ def index():
         # Se chegou aqui, precos_info contém os dados calculados
         logging.info(f"Preços calculados com sucesso: {precos_info}")
 
+        # Aplicar desconto ou acréscimo (somente com PIN correto e valor válido)
+        PIN_VALIDO = "2019"
+        if desconto_pin == PIN_VALIDO and desconto_tipo in ("desconto", "acrescimo") and desconto_valor > 0:
+            mult = (1 - desconto_valor / 100) if desconto_tipo == "desconto" else (1 + desconto_valor / 100)
+            for plano in ["Plano Ouro", "Diamante", "Platinum", "Pesados"]:
+                if plano in precos_info and isinstance(precos_info[plano], (int, float)):
+                    precos_info[plano] = round(precos_info[plano] * mult, 2)
+            sinal = "−" if desconto_tipo == "desconto" else "+"
+            logging.info(f"Ajuste aplicado: {sinal}{desconto_valor}% nos preços.")
+
         # Preparar dados para preencher o PowerPoint
         dados_cotacao = {
             "nome_cliente": nome_cliente,
             "placa": placa,
             "marca": marca,
             "modelo": modelo,
-            "ano": ano_int, 
+            "ano": ano_int,
             "valor_fipe": valor_fipe,
             "categoria": categoria,
-            "precos": precos_info 
+            "veiculo_pesado": veiculo_pesado,
+            "precos": precos_info
         }
 
         # Verificar aviso de aprovação
