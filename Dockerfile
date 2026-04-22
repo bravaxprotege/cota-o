@@ -7,9 +7,13 @@ WORKDIR /app
 # Instale o LibreOffice e outras dependências do sistema
 # O comando apt-get update pode falhar às vezes, adicionamos retry
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libreoffice wget ca-certificates fonts-liberation && \
+    apt-get install -y --no-install-recommends libreoffice wget ca-certificates fonts-liberation fontconfig && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Instala Arial Black (necessária para o template da cotação)
+COPY fonts/ariblk.ttf /usr/share/fonts/truetype/ariblk.ttf
+RUN fc-cache -fv
 
 # Copie o arquivo de requisitos
 COPY requirements.txt requirements.txt
