@@ -6,17 +6,21 @@ from pptx.enum.text import PP_ALIGN
 import traceback
 import os
 import logging
+from lxml import etree
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 log_prefix = "[preenche_cotacao]"
 
+# Namespace DrawingML
+NSMAP = 'http://schemas.openxmlformats.org/drawingml/2006/main'
+
 # ── Formatação exata extraída do template original ───────────────────────────
-FONTE_DADOS  = 'Arial Black'        # fonte dos campos de dados (slide 4)
-FONTE_PRECO  = 'Arial Black'        # fonte dos valores de preço
-TAMANHO_DADOS = Pt(24)              # tamanho dos campos da ficha do veículo
-TAMANHO_PRECO = Pt(44)              # tamanho padrão dos preços (Ouro/Diamante)
-TAMANHO_PRECO_PLAT = Pt(48)         # Platinum tem caixas maiores → 48pt
-COR_PRECO = RGBColor(0xFF, 0xC0, 0x00)   # #FFC000 — amarelo do template
+FONTE_DADOS       = 'Arial Black'        # fonte dos campos de dados (slide 4)
+FONTE_PRECO       = 'Arial Black'        # fonte dos valores de preço
+TAMANHO_DADOS     = Pt(24)              # tamanho dos campos da ficha do veículo
+TAMANHO_PRECO     = Pt(44)              # tamanho padrão dos preços (Ouro/Diamante)
+TAMANHO_PRECO_PLAT = Pt(48)            # Platinum tem caixas maiores → 48pt
+COR_PRECO = RGBColor(0xFF, 0xC0, 0x00) # #FFC000 — amarelo do template
 
 
 def format_currency_manual(value):
@@ -44,12 +48,14 @@ def set_text(text_frame, text_value,
              font_size=None,
              bold=False,
              color=None,
-             alignment=None):
+             alignment=None,
+             word_wrap=False):
     """
     Escreve texto com formatação 100% controlada.
-    - Preserva o alinhamento original do template.
-    - Reseta espaçamento de caracteres via XML (evita letras separadas).
-    - Cor, fonte e tamanho são aplicados explicitamente.
+    - word_wrap=False: evita quebra de linha (padrão para todos os campos).
+    - Reseta espaçamento de caracteres e kerning via XML.
+    - Zera espaçamento de parágrafo (antes/depois).
+    - Cor, fonte e tamanho aplicados explicitamente.
     """
     if text_frame is None:
         return
@@ -61,6 +67,12 @@ def set_text(text_frame, text_value,
 
     tamanho = font_size if font_size is not None else TAMANHO_DADOS
 
+    # Desativa quebra de linha
+    try:
+        text_frame.word_wrap = word_wrap
+    except Exception:
+        pass
+
     text_frame.clear()
     p = text_frame.add_paragraph()
 
@@ -69,6 +81,19 @@ def set_text(text_frame, text_value,
             p.alignment = tmpl_alignment
         except Exception as e:
             logging.warning(f"  Alinhamento não aplicado: {e}")
+
+    # Zera espaçamento do parágrafo via XML (spcBef / spcAft)
+    try:
+        pPr = p._p.get_or_add_pPr()
+        # Remove espaçamento entre linhas herdado do template
+        for tag in (f'{{{NSMAP}}}lnSpc',):
+            el = pPr.find(tag)
+            if el is not None:
+                pPr.remove(el)
+        pPr.set('spcBef', '0')
+        pPr.set('spcAft', '0')
+    except Exception as e:
+        logging.warning(f"  Espaçamento de parágrafo não resetado: {e}")
 
     run = p.add_run()
     run.text = str(text_value)
@@ -79,13 +104,14 @@ def set_text(text_frame, text_value,
     if color is not None:
         run.font.color.rgb = color
 
-    # Reset de espaçamento via XML — resolve "M at h e u s" com espaços estranhos
+    # Reset COMPLETO de espaçamento de caracteres via XML
     try:
         rPr = run._r.get_or_add_rPr()
-        rPr.set('spc', '0')
-        rPr.attrib.pop('kern', None)
+        rPr.set('spc', '0')               # Espaço extra entre caracteres = 0
+        rPr.attrib.pop('kern', None)       # Remove kerning (quando ausente = desativado)
+        rPr.attrib.pop('baseline', None)   # Remove deslocamento de linha base
     except Exception as e:
-        logging.warning(f"  Espaçamento não resetado: {e}")
+        logging.warning(f"  Espaçamento de run não resetado: {e}")
 
     logging.info(f"  '{text_value}' → {font_name} {tamanho.pt}pt bold={bold} cor={color}")
 
@@ -140,8 +166,6 @@ def preencher_cotacao_pptx(template_path, output_path, dados_cotacao):
                  font_size=Pt(20), bold=True)
 
         # ── Slide 4 / índice 3 — Ficha do veículo ───────────────────────────
-        # Todos os campos usam Arial Black 24pt, sem cor explícita
-        # (herda a cor do tema = branco sobre fundo escuro)
         logging.info(f"{log_prefix} Slide 4 (ficha)")
         set_text(find_shape(3, "Nome associado"), nome_cliente.title(), bold=True)
         set_text(find_shape(3, "Placa"),          placa,                bold=True)
