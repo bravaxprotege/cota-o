@@ -3,457 +3,826 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Cotações Bravax</title>
+    <title>Bravax Protege — Cotação Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red:      #e21a1a;
+            --red-dark: #b81414;
+            --red-deep: #8a0f0f;
+            --white:    #ffffff;
+            --gray-50:  #f9f9f9;
+            --gray-100: #f0f0f0;
+            --gray-300: #cccccc;
+            --gray-500: #888888;
+            --gray-700: #444444;
+            --gray-900: #1a1a1a;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
             line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #e21a1a;
-            color: #333;
         }
 
-        .logo-container {
-            background-color: #fff;
-            padding: 10px;
+        /* ── HEADER ── */
+        header {
+            background: var(--white);
+            border-bottom: 3px solid var(--red);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header-logo img {
+            height: 52px;
+            object-fit: contain;
+        }
+
+        /* fallback quando logo ainda não foi adicionada */
+        .header-logo-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--red);
+            letter-spacing: -0.5px;
+        }
+
+        .header-badge {
+            background: var(--red);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, var(--red-deep) 0%, var(--red) 50%, #ff3d3d 100%);
+            color: white;
+            padding: 4rem 2rem 3rem;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo {
-            max-height: 60px;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
         }
 
-        .main-container {
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -40px;
+            width: 250px; height: 250px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            margin-bottom: 1.2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero h1 span {
+            color: #ffd0d0;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-divider {
+            width: 1px;
+            background: rgba(255,255,255,0.3);
+            align-self: stretch;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .main-wrapper {
+                grid-template-columns: 1fr 420px;
+                gap: 3rem;
+                align-items: start;
+            }
+        }
+
+        /* ── SIDE ESQUERDA ── */
+        .info-side {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            gap: 1.5rem;
         }
 
-        @media (min-width: 992px) {
-            .main-container {
-                flex-direction: row;
-            }
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--red);
         }
 
-        .hero-section {
-            padding: 2rem;
-            color: white;
-            flex: 1;
+        .info-card h3 {
+            color: var(--red);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .hero-title {
-            font-size: 3rem;
-            font-weight: bold;
+        .info-card p {
+            color: var(--gray-700);
+            font-size: 0.93rem;
+            line-height: 1.6;
+        }
+
+        .info-card small {
+            display: block;
+            margin-top: 0.4rem;
+            color: var(--gray-500);
+            font-size: 0.8rem;
+        }
+
+        .steps-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .steps-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1.2rem;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
             margin-bottom: 1rem;
-            line-height: 1.2;
         }
 
-        .hero-subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
+        .step-item:last-child { margin-bottom: 0; }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--red);
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .form-container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 1rem;
-            flex: 1;
-            max-width: 500px;
-            align-self: center;
+        .step-text strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--gray-900);
+            margin-bottom: 0.1rem;
         }
 
-        @media (min-width: 992px) {
-            .form-container {
-                margin: 2rem;
-                align-self: flex-start;
-            }
+        .step-text span {
+            font-size: 0.82rem;
+            color: var(--gray-500);
         }
 
-        .form-title {
-            color: #555;
+        .instagram-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-decoration: none;
+            color: var(--gray-900);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .instagram-link:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        .insta-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .insta-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .insta-text strong {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .insta-text span {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        /* ── FORMULÁRIO ── */
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            overflow: hidden;
+            position: sticky;
+            top: 88px;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, var(--red-deep), var(--red));
+            padding: 1.5rem;
+            color: white;
             text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .form-header p {
+            font-size: 0.83rem;
+            opacity: 0.85;
+        }
+
+        .form-body {
+            padding: 1.5rem;
         }
 
         .form-group {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
         }
 
         label {
             display: block;
-            margin-bottom: 0.4rem;
+            font-size: 0.82rem;
             font-weight: 600;
-            color: #555;
+            color: var(--gray-700);
+            margin-bottom: 0.35rem;
+            letter-spacing: 0.2px;
         }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
+            padding: 0.7rem 0.9rem;
+            border: 1.5px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--gray-900);
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input[type="text"]:focus, input[type="number"]:focus {
-            border-color: #e21a1a;
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: var(--red);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(226, 26, 26, 0.2);
+            box-shadow: 0 0 0 3px rgba(226,26,26,0.12);
         }
 
-        /* Grupo com botão inline */
-        .input-with-btn {
+        /* grupo placa */
+        .input-row {
             display: flex;
             gap: 0.5rem;
         }
 
-        .input-with-btn input {
-            flex: 1;
-        }
+        .input-row input { flex: 1; }
 
-        .btn-inline {
-            background-color: #555;
-            color: white;
-            border: none;
-            padding: 0 1rem;
-            border-radius: 4px;
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-300);
+            padding: 0 0.9rem;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
+            font-weight: 600;
             white-space: nowrap;
-            transition: background-color 0.3s;
-            font-weight: 600;
+            transition: background 0.2s;
+            font-family: inherit;
         }
 
-        .btn-inline:hover {
-            background-color: #333;
-        }
+        .btn-secondary:hover { background: var(--gray-300); }
 
-        .btn-fipe {
-            background-color: #e21a1a;
-            color: white;
-            border: none;
-            padding: 0.6rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background-color 0.3s;
-            width: 100%;
+        .hint {
+            font-size: 0.75rem;
+            color: var(--gray-500);
             margin-top: 0.3rem;
+            display: block;
         }
 
-        .btn-fipe:hover {
-            background-color: #c41616;
+        /* botão buscar FIPE */
+        .btn-fipe {
+            width: 100%;
+            margin-top: 0.4rem;
+            padding: 0.6rem;
+            background: var(--gray-50);
+            border: 1.5px dashed var(--red);
+            border-radius: 8px;
+            color: var(--red);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
         }
 
-        .btn-fipe:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
+        .btn-fipe:hover { background: #fff0f0; }
+        .btn-fipe:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .fipe-status {
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            min-height: 1.1em;
         }
 
-        button[type="submit"] {
-            background-color: #e21a1a;
+        .fipe-ok  { color: #16a34a; }
+        .fipe-err { color: var(--red); }
+        .fipe-loading { color: var(--gray-500); }
+
+        /* botão principal */
+        .btn-submit {
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
             color: white;
             border: none;
-            padding: 1rem;
-            font-size: 1.1rem;
-            border-radius: 4px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+            transition: opacity 0.2s, transform 0.15s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-submit:active { transform: translateY(0); }
+
+        /* mensagens */
+        .msg {
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.85rem;
+            border: 1.5px solid;
+            margin-bottom: 1rem;
+        }
+
+        .msg-error   { color: #b91c1c; background: #fef2f2; border-color: #fca5a5; }
+        .msg-success { color: #15803d; background: #f0fdf4; border-color: #86efac; }
+        .msg-warning { color: #92400e; background: #fffbeb; border-color: #fcd34d; }
+        .msg-info    { color: #1e40af; background: #eff6ff; border-color: #93c5fd; font-size: 0.78rem; }
+
+        .loading-bar {
+            display: none;
+            text-align: center;
+            color: var(--red);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 0;
+        }
+
+        /* download */
+        .download-box {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .btn-download {
+            display: block;
             width: 100%;
-            font-weight: bold;
+            padding: 0.85rem;
+            background: #15803d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            text-decoration: none;
+            transition: opacity 0.2s;
         }
 
-        button[type="submit"]:hover {
-            background-color: #c41616;
+        .btn-download:hover { opacity: 0.9; }
+
+        /* ── RODAPÉ ── */
+        footer {
+            background: var(--gray-900);
+            color: white;
+            text-align: center;
+            padding: 2rem 1.5rem;
         }
 
-        a {
-            color: #e21a1a;
+        footer .footer-logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--red);
+            margin-bottom: 0.4rem;
+        }
+
+        footer p {
+            font-size: 0.82rem;
+            color: #999;
+        }
+
+        footer a {
+            color: #ccc;
             text-decoration: none;
         }
 
-        a:hover {
-            text-decoration: underline;
-        }
+        footer a:hover { color: white; }
 
-        .message {
-            margin-top: 1rem;
-            padding: 0.8rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            border: 1px solid;
-        }
-
-        .error {
-            color: #e74c3c;
-            background-color: #fdd;
-            border-color: #e74c3c;
-        }
-
-        .success {
-            color: #27ae60;
-            background-color: #dff0d8;
-            border-color: #27ae60;
-        }
-
-        .warning {
-            color: #f39c12;
-            background-color: #fef9e7;
-            border-color: #f39c12;
-        }
-
-        .info {
-            color: #2980b9;
-            background-color: #eaf4fb;
-            border-color: #2980b9;
-            font-size: 0.85rem;
-        }
-
-        .result-section {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .loading {
+        /* Divisor */
+        .section-divider {
             text-align: center;
-            margin: 1rem 0;
-            display: none;
-            color: #e21a1a;
-            font-weight: bold;
-        }
-
-        .loading::after {
-            content: "...";
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: "."; }
-            40% { content: ".."; }
-            60%, 100% { content: "..."; }
-        }
-
-        .fipe-status {
             font-size: 0.8rem;
-            margin-top: 0.3rem;
-            min-height: 1.2em;
+            color: var(--gray-500);
+            position: relative;
+            margin: 0.8rem 0;
         }
 
-        .fipe-ok { color: #27ae60; }
-        .fipe-err { color: #e74c3c; }
-        .fipe-loading { color: #999; }
-
-        .benefits-section {
-            background-color: #f9f9f9;
-            padding: 3rem 1rem;
-            text-align: center;
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 35%;
+            height: 1px;
+            background: var(--gray-100);
         }
 
-        .benefits-title {
-            color: #e21a1a;
-            font-size: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .benefit-card {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .benefit-title {
-            color: #e21a1a;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
+        .section-divider::before { left: 0; }
+        .section-divider::after  { right: 0; }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="hero-section">
-            <div class="hero-title">
-                Você está a um passo de andar protegido
+
+<!-- HEADER -->
+<header>
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}"
+             alt="Bravax Protege"
+             onerror="this.style.display='none'; document.querySelector('.header-logo-text').style.display='block'">
+        <span class="header-logo-text" style="display:none">BRAVAX Protege</span>
+    </div>
+    <span class="header-badge">🛡️ Mais de 20 anos protegendo Recife</span>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-tag">Proteção veicular personalizada</div>
+    <h1>Sua cotação em <span>segundos</span>, sua proteção para sempre</h1>
+    <p>Preencha os dados do veículo e gere na hora uma cotação completa em PDF, pronta para apresentar ao cliente.</p>
+    <div class="hero-stats">
+        <div class="stat">
+            <span class="stat-number">20+</span>
+            <span class="stat-label">Anos no mercado</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-number">24h</span>
+            <span class="stat-label">Assistência</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Sem burocracia</span>
+        </div>
+    </div>
+</section>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="main-wrapper">
+
+    <!-- LADO ESQUERDO: Informações -->
+    <div class="info-side">
+
+        <div class="steps-card">
+            <h3>Como funciona?</h3>
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <strong>Digite a placa do veículo</strong>
+                    <span>Clique em "Consultar placa" para abrir a busca automática</span>
+                </div>
             </div>
-            <div class="hero-subtitle">
-                Trazendo segurança nas ruas do nosso Recife a mais de 20 anos! Enviaremos em instantes sua cotação personalizada!
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <strong>Preencha marca, modelo e ano</strong>
+                    <span>Copie as informações encontradas na consulta</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <strong>Busque o valor FIPE automaticamente</strong>
+                    <span>Clique no botão e o sistema preenche por você</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-text">
+                    <strong>Baixe a cotação em PDF</strong>
+                    <span>Documento pronto para enviar ao cliente</span>
+                </div>
             </div>
         </div>
 
-        <div class="form-container">
-            <h3 class="form-title">Vamos gerar sua cotação!</h3>
+        <div class="info-card">
+            <h3>🛡️ Assistência 24 horas</h3>
+            <p>Guincho, chaveiro, troca de pneu e muito mais. Seu cliente fica protegido em qualquer situação, a qualquer hora do dia.</p>
+        </div>
+
+        <div class="info-card">
+            <h3>⚡ Cobertura imediata</h3>
+            <p>Assim que o contrato é assinado, o pagamento confirmado e a vistoria realizada, o veículo já está protegido.</p>
+        </div>
+
+        <div class="info-card">
+            <h3>🤝 Sem complicação</h3>
+            <p>Processo simples, sem burocracia. A Bravax cuida de tudo para que você e seu cliente fiquem tranquilos.</p>
+        </div>
+
+        <a class="instagram-link" href="https://www.instagram.com/bravaxprotege/" target="_blank">
+            <div class="insta-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+            </div>
+            <div class="insta-text">
+                <strong>@bravaxprotege</strong>
+                <span>Siga a Bravax no Instagram</span>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- FORMULÁRIO -->
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Gerar Cotação</h2>
+            <p>Preencha os dados abaixo e receba o PDF na hora</p>
+        </div>
+        <div class="form-body">
 
             {% if error %}
-            <div class="message error">{{ error }}</div>
+            <div class="msg msg-error">{{ error }}</div>
             {% endif %}
 
             {% if warning %}
-            <div class="message warning">{{ warning }}</div>
+            <div class="msg msg-warning">{{ warning }}</div>
             {% endif %}
 
             {% if success %}
-            <div class="message success">{{ success }}</div>
+            <div class="msg msg-success">{{ success }}</div>
             {% endif %}
 
             <form method="POST" action="/" id="cotacao-form">
+
                 <div class="form-group">
-                    <label for="nome">Nome do Cliente*</label>
-                    <input type="text" id="nome" name="nome" placeholder="Informe o nome do cliente" required>
+                    <label for="nome">Nome do Cliente *</label>
+                    <input type="text" id="nome" name="nome"
+                           placeholder="Nome completo do cliente" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="placa">Placa do Veículo*</label>
-                    <div class="input-with-btn">
+                    <label for="placa">Placa do Veículo *</label>
+                    <div class="input-row">
                         <input type="text" id="placa" name="placa"
-                               placeholder="Ex: ABC1D23" required
-                               style="text-transform: uppercase;">
-                        <button type="button" class="btn-inline" onclick="abrirPlacaFipe()">
+                               placeholder="ABC1D23" required
+                               style="text-transform:uppercase; letter-spacing: 1px;">
+                        <button type="button" class="btn-secondary" onclick="abrirPlacaFipe()">
                             Consultar placa
                         </button>
                     </div>
-                    <div class="message info" style="margin-top: 0.5rem; padding: 0.5rem 0.8rem;">
-                        Digite a placa e clique em <strong>Consultar placa</strong> para abrir a busca. Copie marca, modelo e ano para os campos abaixo.
-                    </div>
+                    <span class="hint">Clique em "Consultar placa" e copie as informações para os campos abaixo</span>
+                </div>
+
+                <div class="section-divider">dados do veículo</div>
+
+                <div class="form-group">
+                    <label for="marca">Marca *</label>
+                    <input type="text" id="marca" name="marca"
+                           placeholder="Ex: Volkswagen, Fiat, Toyota" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="marca">Marca*</label>
-                    <input type="text" id="marca" name="marca" placeholder="Ex: VW, Fiat, Toyota" required>
+                    <label for="modelo">Modelo *</label>
+                    <input type="text" id="modelo" name="modelo"
+                           placeholder="Ex: Virtus, Corolla, Onix" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="modelo">Modelo*</label>
-                    <input type="text" id="modelo" name="modelo" placeholder="Ex: Virtus, Corolla" required>
+                    <label for="ano">Ano do Modelo *</label>
+                    <input type="number" id="ano" name="ano"
+                           placeholder="Ex: 2023" min="1990" max="2030" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="ano">Ano Modelo*</label>
-                    <input type="number" id="ano" name="ano" placeholder="Ex: 2023" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="valor_fipe">Valor FIPE (R$)*</label>
+                    <label for="valor_fipe">Valor FIPE (R$) *</label>
                     <input type="number" step="0.01" id="valor_fipe" name="valor_fipe"
                            placeholder="Ex: 74442.00" required>
                     <button type="button" class="btn-fipe" id="btn-buscar-fipe" onclick="buscarFipe()">
-                        Buscar valor FIPE automaticamente
+                        🔍 Buscar valor FIPE automaticamente
                     </button>
                     <div class="fipe-status" id="fipe-status"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoria">Categoria (Opcional)</label>
-                    <input type="text" id="categoria" name="categoria" placeholder="Ex: PASSEIO">
+                    <label for="categoria">Categoria</label>
+                    <input type="text" id="categoria" name="categoria"
+                           placeholder="Ex: PASSEIO (opcional)">
                 </div>
 
-                <button type="submit">Gerar Cotação</button>
+                <button type="submit" class="btn-submit">
+                    Gerar Cotação em PDF
+                </button>
+
             </form>
 
-            <div class="loading" id="loading">Gerando cotação</div>
+            <div class="loading-bar" id="loading">⏳ Gerando sua cotação, aguarde...</div>
 
             {% if pdf_filename %}
-            <div class="result-section">
-                <p>Sua cotação personalizada está pronta para download:</p>
-                <a href="{{ url_for('download_file', filename=pdf_filename) }}" target="_blank">
-                    <button type="button">Baixar Cotação em PDF</button>
+            <div class="download-box">
+                <p style="font-size:0.83rem; color:var(--gray-500); margin-bottom:0.8rem; text-align:center;">
+                    Cotação gerada com sucesso!
+                </p>
+                <a href="{{ url_for('download_file', filename=pdf_filename) }}"
+                   class="btn-download" target="_blank">
+                    ⬇️ Baixar Cotação em PDF
                 </a>
             </div>
             {% endif %}
+
         </div>
     </div>
 
-    <div class="benefits-section">
-        <h2 class="benefits-title">Por que eu devo escolher a Bravax Protege?</h2>
-        <div class="benefits-grid">
-            <div class="benefit-card">
-                <h4 class="benefit-title">Assistência 24h</h4>
-                <p>Assistência 24 horas para garantir a segurança do seu veículo a qualquer momento.</p>
-            </div>
-            <div class="benefit-card">
-                <h4 class="benefit-title">Segurança</h4>
-                <p>Você mais tranquilo com a proteção total do seu veículo sem burocracia.</p>
-            </div>
-            <div class="benefit-card">
-                <h4 class="benefit-title">Agilidade</h4>
-                <p>Imediatamente após a adesão* o seu veículo já está protegido.</p>
-                <small>*A adesão consiste em ter a assinatura do contrato, pagamento da adesão e vistoria.</small>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <script>
-        // Mostra spinner ao submeter o formulário
-        document.getElementById('cotacao-form').addEventListener('submit', function () {
-            document.getElementById('loading').style.display = 'block';
-        });
+<!-- RODAPÉ -->
+<footer>
+    <div class="footer-logo">BRAVAX Protege</div>
+    <p>Trazendo segurança nas ruas do nosso Recife há mais de 20 anos.</p>
+    <p style="margin-top:0.5rem;">
+        <a href="https://www.instagram.com/bravaxprotege/" target="_blank">@bravaxprotege</a>
+    </p>
+</footer>
 
-        // Abre placafipe.com.br com a placa já preenchida na URL
-        function abrirPlacaFipe() {
-            const placa = document.getElementById('placa').value.trim().toUpperCase();
-            if (!placa) {
-                alert('Digite a placa primeiro.');
-                return;
-            }
-            window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank');
+<script>
+    document.getElementById('cotacao-form').addEventListener('submit', function () {
+        document.getElementById('loading').style.display = 'block';
+        document.querySelector('.btn-submit').disabled = true;
+        document.querySelector('.btn-submit').textContent = 'Gerando...';
+    });
+
+    function abrirPlacaFipe() {
+        const placa = document.getElementById('placa').value.trim().toUpperCase();
+        if (!placa) { alert('Digite a placa primeiro.'); return; }
+        window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank');
+    }
+
+    async function buscarFipe() {
+        const marca  = document.getElementById('marca').value.trim();
+        const modelo = document.getElementById('modelo').value.trim();
+        const ano    = document.getElementById('ano').value.trim();
+        const status = document.getElementById('fipe-status');
+        const btn    = document.getElementById('btn-buscar-fipe');
+
+        if (!marca || !modelo || !ano) {
+            status.textContent = '⚠️ Preencha marca, modelo e ano antes de buscar.';
+            status.className = 'fipe-status fipe-err';
+            return;
         }
 
-        // Busca o valor FIPE automaticamente via API
-        async function buscarFipe() {
-            const marca = document.getElementById('marca').value.trim();
-            const modelo = document.getElementById('modelo').value.trim();
-            const ano = document.getElementById('ano').value.trim();
-            const status = document.getElementById('fipe-status');
-            const btn = document.getElementById('btn-buscar-fipe');
+        btn.disabled = true;
+        status.textContent = 'Buscando na tabela FIPE...';
+        status.className = 'fipe-status fipe-loading';
 
-            if (!marca || !modelo || !ano) {
-                status.textContent = 'Preencha marca, modelo e ano antes de buscar.';
+        try {
+            const params = new URLSearchParams({ marca, modelo, ano });
+            const resp = await fetch('/api/buscar-fipe?' + params);
+            const data = await resp.json();
+
+            if (!resp.ok || data.erro) {
+                status.textContent = '❌ ' + (data.erro || 'Não foi possível encontrar o valor FIPE.');
                 status.className = 'fipe-status fipe-err';
-                return;
+            } else {
+                document.getElementById('valor_fipe').value = data.valor_fipe;
+                if (data.marca)  document.getElementById('marca').value  = data.marca;
+                if (data.modelo) document.getElementById('modelo').value = data.modelo;
+                status.textContent = `✅ FIPE encontrado: ${data.valor_fipe_formatado} (cód. ${data.codigo_fipe})`;
+                status.className = 'fipe-status fipe-ok';
             }
-
-            btn.disabled = true;
-            status.textContent = 'Buscando na tabela FIPE...';
-            status.className = 'fipe-status fipe-loading';
-
-            try {
-                const params = new URLSearchParams({ marca, modelo, ano });
-                const resp = await fetch('/api/buscar-fipe?' + params);
-                const data = await resp.json();
-
-                if (!resp.ok || data.erro) {
-                    status.textContent = data.erro || 'Não foi possível encontrar o valor FIPE.';
-                    status.className = 'fipe-status fipe-err';
-                } else {
-                    document.getElementById('valor_fipe').value = data.valor_fipe;
-                    // Atualiza marca e modelo com os nomes exatos da tabela FIPE
-                    if (data.marca) document.getElementById('marca').value = data.marca;
-                    if (data.modelo) document.getElementById('modelo').value = data.modelo;
-                    status.textContent = `✔ FIPE encontrado: ${data.valor_fipe_formatado} (código ${data.codigo_fipe})`;
-                    status.className = 'fipe-status fipe-ok';
-                }
-            } catch (e) {
-                status.textContent = 'Erro de conexão ao buscar FIPE. Preencha manualmente.';
-                status.className = 'fipe-status fipe-err';
-            } finally {
-                btn.disabled = false;
-            }
+        } catch (e) {
+            status.textContent = '❌ Erro de conexão. Preencha o valor manualmente.';
+            status.className = 'fipe-status fipe-err';
+        } finally {
+            btn.disabled = false;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
