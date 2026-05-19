@@ -346,12 +346,27 @@ def index():
     # Fim do 'if request.method == "POST":'
     # O return abaixo será executado para GET ou após o POST (com ou sem erro/success)
 
+    # Preserva os dados do formulário para repopular após POST
+    form_data = None
+    if request.method == "POST":
+        form_data = {
+            "nome":           request.form.get("nome", ""),
+            "placa":          request.form.get("placa", "").upper(),
+            "marca":          request.form.get("marca", ""),
+            "modelo":         request.form.get("modelo", ""),
+            "ano":            request.form.get("ano", ""),
+            "valor_fipe":     request.form.get("valor_fipe", ""),
+            "categoria":      request.form.get("categoria", ""),
+            "veiculo_pesado": request.form.get("veiculo_pesado") == "on",
+        }
+
 # Renderiza o template no final, seja GET ou POST, com as variáveis de estado
-    return render_template("index.html", 
-                       error=error, 
-                       success=success, 
-                       warning=warning, 
-                       pdf_filename=pdf_filename) # Passa o nome do arquivo PDF
+    return render_template("index.html",
+                           error=error,
+                           success=success,
+                           warning=warning,
+                           pdf_filename=pdf_filename,
+                           form_data=form_data)
 
 
 @app.route("/output/<path:filename>") 

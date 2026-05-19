@@ -43,91 +43,43 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        .header-logo img {
-            height: 52px;
-            object-fit: contain;
-        }
-
-        .header-logo-text {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--red);
-            letter-spacing: -0.5px;
-        }
-
+        .header-logo img { height: 52px; object-fit: contain; }
+        .header-logo-text { font-size: 1.6rem; font-weight: 800; color: var(--red); letter-spacing: -0.5px; }
         .header-badge {
-            background: var(--red);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            letter-spacing: 0.5px;
+            background: var(--red); color: white;
+            font-size: 0.75rem; font-weight: 600;
+            padding: 0.3rem 0.8rem; border-radius: 20px; letter-spacing: 0.5px;
         }
 
         /* ── HERO ── */
         .hero {
             position: relative;
             background: linear-gradient(135deg, var(--red-deep) 0%, var(--red) 55%, #ff3d3d 100%);
-            color: white;
-            padding: 4rem 2rem 3rem;
-            text-align: center;
-            overflow: hidden;
+            color: white; padding: 4rem 2rem 3rem; text-align: center; overflow: hidden;
         }
-
-        /* Imagem de fundo com transparência */
         .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             background: url('/static/images/hero-bg.png') center / cover no-repeat;
-            opacity: 0.18;
-            pointer-events: none;
+            opacity: 0.18; pointer-events: none;
         }
-
         .hero-content { position: relative; z-index: 1; }
-
         .hero-tag {
-            display: inline-block;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            margin-bottom: 1.2rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            display: inline-block; background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3); color: white;
+            font-size: 0.8rem; font-weight: 600; padding: 0.3rem 1rem;
+            border-radius: 20px; margin-bottom: 1.2rem; letter-spacing: 1px; text-transform: uppercase;
         }
-
         .hero h1 {
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-            max-width: 680px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+            line-height: 1.2; margin-bottom: 1rem;
+            max-width: 680px; margin-left: auto; margin-right: auto;
         }
-
         .hero h1 span { color: #ffd0d0; }
-
-        .hero p {
-            font-size: 1.05rem;
-            opacity: 0.9;
-            max-width: 520px;
-            margin: 0 auto;
-        }
-
+        .hero p { font-size: 1.05rem; opacity: 0.9; max-width: 520px; margin: 0 auto; }
         .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 2.5rem;
-            margin-top: 2.5rem;
-            flex-wrap: wrap;
+            display: flex; justify-content: center; gap: 2.5rem;
+            margin-top: 2.5rem; flex-wrap: wrap;
         }
-
         .stat { text-align: center; }
         .stat-number { font-size: 1.8rem; font-weight: 800; display: block; }
         .stat-label  { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -135,79 +87,47 @@
 
         /* ── LAYOUT ── */
         .main-wrapper {
-            max-width: 1100px;
-            margin: 0 auto;
+            max-width: 1100px; margin: 0 auto;
             padding: 2.5rem 1.5rem 4rem;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
+            display: grid; grid-template-columns: 1fr; gap: 2rem;
         }
-
         @media (min-width: 900px) {
-            .main-wrapper {
-                grid-template-columns: 1fr 420px;
-                gap: 3rem;
-                align-items: start;
-            }
+            .main-wrapper { grid-template-columns: 1fr 420px; gap: 3rem; align-items: start; }
         }
 
         /* ── LADO ESQUERDO ── */
         .info-side { display: flex; flex-direction: column; gap: 1.5rem; }
-
         .info-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-left: 4px solid var(--red);
+            background: white; border-radius: 12px; padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid var(--red);
         }
-
-        .info-card h3 {
-            color: var(--red);
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .info-card p { color: var(--gray-700); font-size: 0.93rem; }
+        .info-card h3 { color: var(--red); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .info-card p  { color: var(--gray-700); font-size: 0.93rem; }
 
         .steps-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
+            background: white; border-radius: 12px; padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-
         .steps-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; }
-
         .step-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
         .step-item:last-child { margin-bottom: 0; }
-
         .step-num {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: var(--red);
-            color: white;
-            font-weight: 700;
-            font-size: 0.8rem;
+            width: 28px; height: 28px; border-radius: 50%; background: var(--red);
+            color: white; font-weight: 700; font-size: 0.8rem;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; margin-top: 2px;
         }
-
         .step-text strong { display: block; font-size: 0.9rem; margin-bottom: 0.1rem; }
         .step-text span   { font-size: 0.82rem; color: var(--gray-500); }
 
         .instagram-link {
             display: flex; align-items: center; gap: 0.8rem;
-            background: white;
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
+            background: white; border-radius: 12px; padding: 1rem 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             text-decoration: none; color: var(--gray-900);
             transition: box-shadow 0.2s, transform 0.2s;
         }
         .instagram-link:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
-
         .insta-icon {
             width: 40px; height: 40px; border-radius: 10px;
             background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
@@ -219,14 +139,10 @@
 
         /* ── FORMULÁRIO ── */
         .form-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-            overflow: hidden;
-            position: sticky;
-            top: 88px;
+            background: white; border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10); overflow: hidden;
+            position: sticky; top: 88px;
         }
-
         .form-header {
             background: linear-gradient(135deg, var(--red-deep), var(--red));
             padding: 1.5rem; color: white; text-align: center;
@@ -244,18 +160,23 @@
 
         input[type="text"],
         input[type="number"],
-        input[type="password"] {
-            width: 100%;
-            padding: 0.7rem 0.9rem;
-            border: 1.5px solid var(--gray-300);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            color: var(--gray-900);
-            background: white;
+        input[type="password"],
+        select {
+            width: 100%; padding: 0.7rem 0.9rem;
+            border: 1.5px solid var(--gray-300); border-radius: 8px;
+            font-size: 0.95rem; font-family: inherit;
+            color: var(--gray-900); background: white;
             transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none; -webkit-appearance: none;
         }
-        input:focus {
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.9rem center;
+            padding-right: 2.2rem;
+            cursor: pointer;
+        }
+        input:focus, select:focus {
             border-color: var(--red); outline: none;
             box-shadow: 0 0 0 3px rgba(226,26,26,0.12);
         }
@@ -264,16 +185,10 @@
         .input-row input { flex: 1; }
 
         .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            border: 1.5px solid var(--gray-300);
-            padding: 0 0.9rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.78rem;
-            font-weight: 600;
-            white-space: nowrap;
-            transition: background 0.2s;
+            background: var(--gray-100); color: var(--gray-700);
+            border: 1.5px solid var(--gray-300); padding: 0 0.9rem;
+            border-radius: 8px; cursor: pointer; font-size: 0.78rem;
+            font-weight: 600; white-space: nowrap; transition: background 0.2s;
             font-family: inherit;
         }
         .btn-secondary:hover { background: var(--gray-300); }
@@ -282,13 +197,10 @@
 
         .btn-fipe {
             width: 100%; margin-top: 0.4rem; padding: 0.6rem;
-            background: var(--gray-50);
-            border: 1.5px dashed var(--red);
-            border-radius: 8px;
-            color: var(--red);
-            font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; font-family: inherit;
-            transition: background 0.2s;
+            background: var(--gray-50); border: 1.5px dashed var(--red);
+            border-radius: 8px; color: var(--red);
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: background 0.2s;
         }
         .btn-fipe:hover    { background: #fff0f0; }
         .btn-fipe:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -300,98 +212,61 @@
 
         /* ── TOGGLE VEÍCULO PESADO ── */
         .pesado-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.7rem;
-            background: #fff8f0;
-            border: 1.5px solid #f0a040;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #92400e;
-            width: 100%;
-            text-align: left;
-            transition: background 0.2s;
-            margin-bottom: 0;
+            display: flex; align-items: center; gap: 0.4rem;
+            padding: 0.4rem 0.7rem; background: #fff8f0;
+            border: 1.5px solid #f0a040; border-radius: 6px;
+            cursor: pointer; font-family: inherit; font-size: 0.78rem;
+            font-weight: 600; color: #92400e; width: 100%; text-align: left;
+            transition: background 0.2s; margin-bottom: 0;
         }
         .pesado-toggle:hover { background: #fff0dc; }
         .pesado-toggle input[type="checkbox"] {
-            width: 14px; height: 14px;
-            accent-color: #d97706;
-            cursor: pointer;
-            border: none;
-            padding: 0;
-            margin: 0;
+            width: 14px; height: 14px; accent-color: #d97706;
+            cursor: pointer; border: none; padding: 0; margin: 0;
         }
 
-        /* ── SEÇÃO DESCONTO (oculta por padrão) ── */
+        /* ── SEÇÃO DESCONTO ── */
         .desconto-toggle-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: none;
-            border: none;
-            color: var(--gray-500);
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 0.4rem 0;
-            font-family: inherit;
-            width: 100%;
-            justify-content: center;
-            letter-spacing: 0.3px;
-            transition: color 0.2s;
-            margin-top: 0.3rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            background: none; border: none; color: var(--gray-500);
+            font-size: 0.78rem; font-weight: 600; cursor: pointer;
+            padding: 0.4rem 0; font-family: inherit; width: 100%;
+            justify-content: center; letter-spacing: 0.3px;
+            transition: color 0.2s; margin-top: 0.3rem;
         }
         .desconto-toggle-btn:hover { color: var(--gray-700); }
         .desconto-toggle-btn .arrow { transition: transform 0.3s; display: inline-block; }
         .desconto-toggle-btn.open .arrow { transform: rotate(180deg); }
 
         .desconto-section {
-            display: none;
-            background: #f8f8ff;
-            border: 1.5px solid #c7c7e8;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 0.5rem;
+            display: none; background: #f8f8ff;
+            border: 1.5px solid #c7c7e8; border-radius: 10px;
+            padding: 1rem; margin-top: 0.5rem;
         }
         .desconto-section.visible { display: block; }
-
         .desconto-pin-block { margin-bottom: 0.8rem; }
         .desconto-pin-block label { color: #4338ca; }
         .desconto-pin-block input { border-color: #c7c7e8; letter-spacing: 4px; text-align: center; }
-
         .desconto-fields { display: none; }
         .desconto-fields.visible { display: block; }
-
         .tipo-row { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
         .tipo-btn {
-            flex: 1; padding: 0.5rem;
-            border: 1.5px solid var(--gray-300);
-            border-radius: 7px;
-            background: white;
-            font-family: inherit;
-            font-size: 0.83rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--gray-700);
+            flex: 1; padding: 0.5rem; border: 1.5px solid var(--gray-300);
+            border-radius: 7px; background: white; font-family: inherit;
+            font-size: 0.83rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; color: var(--gray-700);
         }
-        .tipo-btn.selected-desc  { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
-        .tipo-btn.selected-acre  { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+        .tipo-btn.selected-desc { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+        .tipo-btn.selected-acre { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
 
         /* ── BOTÃO PRINCIPAL ── */
         .btn-submit {
             width: 100%; padding: 0.95rem;
             background: linear-gradient(135deg, var(--red), var(--red-dark));
             color: white; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 700;
-            cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
-            transition: opacity 0.2s, transform 0.15s;
-            margin-top: 0.5rem;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            font-family: inherit; letter-spacing: 0.3px;
+            transition: opacity 0.2s, transform 0.15s; margin-top: 0.5rem;
         }
         .btn-submit:hover  { opacity: 0.92; transform: translateY(-1px); }
         .btn-submit:active { transform: translateY(0); }
@@ -406,19 +281,39 @@
         .msg-warning { color: #92400e; background: #fffbeb; border-color: #fcd34d; }
 
         .loading-bar {
-            display: none; text-align: center;
-            color: var(--red); font-size: 0.85rem; font-weight: 600;
-            padding: 0.5rem 0;
+            display: none; text-align: center; color: var(--red);
+            font-size: 0.85rem; font-weight: 600; padding: 0.5rem 0;
         }
 
-        .download-box { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-100); }
-
+        /* ── CAIXA DE DOWNLOAD ── */
+        .download-box {
+            margin-top: 1rem; padding: 1.2rem;
+            background: #f0fdf4; border: 2px solid #86efac;
+            border-radius: 12px; text-align: center;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .download-box .client-name {
+            font-size: 0.9rem; font-weight: 700; color: #15803d;
+            margin-bottom: 0.3rem;
+        }
+        .download-box .plate-badge {
+            display: inline-block;
+            background: #15803d; color: white;
+            font-size: 0.75rem; font-weight: 700;
+            padding: 0.15rem 0.6rem; border-radius: 4px;
+            letter-spacing: 1px; margin-bottom: 0.8rem;
+        }
         .btn-download {
-            display: block; width: 100%; padding: 0.85rem;
+            display: block; width: 100%; padding: 0.9rem;
             background: #15803d; color: white; border: none;
-            border-radius: 10px; font-size: 0.95rem; font-weight: 700;
+            border-radius: 10px; font-size: 1rem; font-weight: 700;
             cursor: pointer; font-family: inherit; text-align: center;
             text-decoration: none; transition: opacity 0.2s;
+            box-shadow: 0 3px 10px rgba(21,128,61,0.3);
         }
         .btn-download:hover { opacity: 0.9; }
 
@@ -434,13 +329,10 @@
         .divider::after  { right: 0; }
 
         /* ── RODAPÉ ── */
-        footer {
-            background: var(--gray-900); color: white;
-            text-align: center; padding: 2rem 1.5rem;
-        }
+        footer { background: var(--gray-900); color: white; text-align: center; padding: 2rem 1.5rem; }
         .footer-logo { font-size: 1.3rem; font-weight: 800; color: var(--red); margin-bottom: 0.4rem; }
-        footer p     { font-size: 0.82rem; color: #999; }
-        footer a     { color: #ccc; text-decoration: none; }
+        footer p  { font-size: 0.82rem; color: #999; }
+        footer a  { color: #ccc; text-decoration: none; }
         footer a:hover { color: white; }
     </style>
 </head>
@@ -505,8 +397,8 @@
             <div class="step-item">
                 <div class="step-num">3</div>
                 <div class="step-text">
-                    <strong>Busque o valor FIPE automaticamente</strong>
-                    <span>Clique no botão e o sistema preenche por você</span>
+                    <strong>Valor FIPE preenchido automaticamente</strong>
+                    <span>Ao terminar de preencher o ano, o sistema busca sozinho</span>
                 </div>
             </div>
             <div class="step-item">
@@ -543,7 +435,7 @@
     </div>
 
     <!-- FORMULÁRIO -->
-    <div class="form-card">
+    <div class="form-card" id="form-card">
         <div class="form-header">
             <h2>Gerar Cotação</h2>
             <p>Preencha os dados abaixo e receba o PDF na hora</p>
@@ -556,15 +448,14 @@
             {% if warning %}
             <div class="msg msg-warning">{{ warning }}</div>
             {% endif %}
-            {% if success %}
-            <div class="msg msg-success">{{ success }}</div>
-            {% endif %}
 
             <form method="POST" action="/" id="cotacao-form">
 
                 <div class="form-group">
                     <label for="nome">Nome do Cliente *</label>
-                    <input type="text" id="nome" name="nome" placeholder="Nome completo do cliente" required>
+                    <input type="text" id="nome" name="nome"
+                           placeholder="Nome completo do cliente" required
+                           value="{{ form_data.nome if form_data else '' }}">
                 </div>
 
                 <div class="form-group">
@@ -572,9 +463,12 @@
                     <div class="input-row">
                         <input type="text" id="placa" name="placa"
                                placeholder="ABC1D23" required
-                               style="text-transform:uppercase; letter-spacing:1px;">
+                               maxlength="8"
+                               style="text-transform:uppercase; letter-spacing:2px;"
+                               value="{{ form_data.placa if form_data else '' }}"
+                               oninput="this.value = this.value.replace(/\s/g,'').toUpperCase()">
                         <button type="button" class="btn-secondary" onclick="abrirPlacaFipe()">
-                            Consultar placa
+                            🔎 Consultar placa
                         </button>
                     </div>
                     <span class="hint">Clique em "Consultar placa" e copie marca, modelo e ano para os campos abaixo</span>
@@ -586,42 +480,61 @@
                 <div class="form-group">
                     <label class="pesado-toggle" for="veiculo_pesado">
                         <input type="checkbox" id="veiculo_pesado" name="veiculo_pesado"
-                               onchange="togglePesado(this)">
+                               onchange="togglePesado(this)"
+                               {{ 'checked' if form_data and form_data.veiculo_pesado else '' }}>
                         🚛 Este veículo é pesado (caminhão, van, etc.)
                     </label>
-                    <span class="hint" id="hint-pesado" style="display:none; color:#92400e;">
+                    <span class="hint" id="hint-pesado"
+                          style="display:{{ 'block' if form_data and form_data.veiculo_pesado else 'none' }}; color:#92400e;">
                         Veículo pesado: cotação gerada apenas com o Plano Diamante Pesado.
                     </span>
                 </div>
 
                 <div class="form-group">
                     <label for="marca">Marca *</label>
-                    <input type="text" id="marca" name="marca" placeholder="Ex: Volkswagen, Fiat, Toyota" required>
+                    <input type="text" id="marca" name="marca"
+                           placeholder="Ex: Volkswagen, Fiat, Toyota" required
+                           value="{{ form_data.marca if form_data else '' }}"
+                           oninput="agendarBuscaFipe()">
                 </div>
 
                 <div class="form-group">
                     <label for="modelo">Modelo *</label>
-                    <input type="text" id="modelo" name="modelo" placeholder="Ex: Virtus, Corolla, Onix" required>
+                    <input type="text" id="modelo" name="modelo"
+                           placeholder="Ex: Virtus, Corolla, Onix" required
+                           value="{{ form_data.modelo if form_data else '' }}"
+                           oninput="agendarBuscaFipe()">
                 </div>
 
                 <div class="form-group">
                     <label for="ano">Ano do Modelo *</label>
-                    <input type="number" id="ano" name="ano" placeholder="Ex: 2023" min="1990" max="2030" required>
+                    <input type="number" id="ano" name="ano"
+                           placeholder="Ex: 2023" min="1990" max="2030" required
+                           value="{{ form_data.ano if form_data else '' }}"
+                           oninput="agendarBuscaFipe()" onblur="buscarFipeSeCompleto()">
                 </div>
 
                 <div class="form-group">
                     <label for="valor_fipe">Valor FIPE (R$) *</label>
                     <input type="number" step="0.01" id="valor_fipe" name="valor_fipe"
-                           placeholder="Ex: 74442.00" required>
+                           placeholder="Preenchido automaticamente" required
+                           value="{{ form_data.valor_fipe if form_data else '' }}">
                     <button type="button" class="btn-fipe" id="btn-buscar-fipe" onclick="buscarFipe()">
-                        🔍 Buscar valor FIPE automaticamente
+                        🔍 Buscar valor FIPE
                     </button>
                     <div class="fipe-status" id="fipe-status"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="categoria">Categoria</label>
-                    <input type="text" id="categoria" name="categoria" placeholder="Ex: PASSEIO (opcional)">
+                    <select id="categoria" name="categoria">
+                        <option value="PASSEIO"    {{ 'selected' if not form_data or form_data.categoria in ('', 'PASSEIO') else '' }}>PASSEIO</option>
+                        <option value="UTILITÁRIO" {{ 'selected' if form_data and form_data.categoria == 'UTILITÁRIO' else '' }}>UTILITÁRIO</option>
+                        <option value="MOTO"       {{ 'selected' if form_data and form_data.categoria == 'MOTO' else '' }}>MOTO</option>
+                        <option value="VAN"        {{ 'selected' if form_data and form_data.categoria == 'VAN' else '' }}>VAN</option>
+                        <option value="SUV"        {{ 'selected' if form_data and form_data.categoria == 'SUV' else '' }}>SUV</option>
+                        <option value="PICKUP"     {{ 'selected' if form_data and form_data.categoria == 'PICKUP' else '' }}>PICKUP</option>
+                    </select>
                 </div>
 
                 <!-- CAMPOS OCULTOS DO DESCONTO -->
@@ -629,40 +542,34 @@
                 <input type="hidden" id="desconto_valor" name="desconto_valor" value="0">
                 <input type="hidden" id="desconto_pin"   name="desconto_pin"   value="">
 
-                <button type="submit" class="btn-submit">Gerar Cotação em PDF</button>
+                <button type="submit" class="btn-submit" id="btn-submit">
+                    📄 Gerar Cotação em PDF
+                </button>
             </form>
 
-            <!-- BOTÃO OCULTO DE DESCONTO (discreto, abaixo do form) -->
+            <!-- BOTÃO OCULTO DE DESCONTO -->
             <button class="desconto-toggle-btn" id="btn-desconto-toggle" onclick="toggleDesconto()">
                 <span class="arrow">▾</span> ajuste de valor
             </button>
 
             <div class="desconto-section" id="desconto-section">
-                <!-- PIN -->
                 <div class="desconto-pin-block">
                     <label for="input-pin">🔐 PIN de acesso</label>
                     <input type="password" id="input-pin" maxlength="4" placeholder="••••"
                            oninput="validarPin(this)">
                     <span class="hint" id="pin-msg"></span>
                 </div>
-
-                <!-- Campos de desconto (aparecem após PIN correto) -->
                 <div class="desconto-fields" id="desconto-fields">
                     <label style="margin-bottom:0.5rem; display:block;">Tipo de ajuste</label>
                     <div class="tipo-row">
                         <button type="button" class="tipo-btn" id="btn-desc"
-                                onclick="selecionarTipo('desconto')">
-                            ↓ Desconto
-                        </button>
+                                onclick="selecionarTipo('desconto')">↓ Desconto</button>
                         <button type="button" class="tipo-btn" id="btn-acre"
-                                onclick="selecionarTipo('acrescimo')">
-                            ↑ Acréscimo
-                        </button>
+                                onclick="selecionarTipo('acrescimo')">↑ Acréscimo</button>
                     </div>
                     <label for="input-pct">Percentual (%)</label>
                     <input type="number" id="input-pct" min="0.1" max="99" step="0.1"
-                           placeholder="Ex: 5"
-                           oninput="atualizarDesconto(this.value)">
+                           placeholder="Ex: 5" oninput="atualizarDesconto(this.value)">
                     <span class="hint" id="desconto-preview" style="margin-top:0.4rem;"></span>
                 </div>
             </div>
@@ -670,16 +577,20 @@
             <div class="loading-bar" id="loading">⏳ Gerando sua cotação, aguarde...</div>
 
             {% if pdf_filename %}
-            <div class="download-box">
-                <p style="font-size:0.83rem; color:var(--gray-500); margin-bottom:0.8rem; text-align:center;">
-                    Cotação gerada com sucesso!
-                </p>
+            <div class="download-box" id="download-box">
+                {% if form_data %}
+                <div class="client-name">✅ Cotação gerada — {{ form_data.nome }}</div>
+                <span class="plate-badge">{{ form_data.placa }}</span>
+                {% else %}
+                <div class="client-name">✅ Cotação gerada com sucesso!</div>
+                {% endif %}
                 <a href="{{ url_for('download_file', filename=pdf_filename) }}"
                    class="btn-download" target="_blank">
-                    ⬇️ Baixar Cotação em PDF
+                    ⬇️ Baixar PDF
                 </a>
             </div>
             {% endif %}
+
         </div>
     </div>
 </div>
@@ -696,27 +607,52 @@
 <script>
 const PIN_CORRETO = "2019";
 let tipoSelecionado = "";
+let fipeTimer = null;
 
-// Spinner ao submeter
+// ── Spinner ao submeter ──────────────────────────────────────────────────────
 document.getElementById('cotacao-form').addEventListener('submit', function () {
     document.getElementById('loading').style.display = 'block';
-    document.querySelector('.btn-submit').disabled = true;
-    document.querySelector('.btn-submit').textContent = 'Gerando...';
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = '⏳ Gerando...';
 });
 
-// Abrir placafipe com placa preenchida
+// ── Auto-scroll para o download se existir ───────────────────────────────────
+window.addEventListener('load', function () {
+    const box = document.getElementById('download-box');
+    if (box) {
+        setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    }
+});
+
+// ── Consultar placa ──────────────────────────────────────────────────────────
 function abrirPlacaFipe() {
     const placa = document.getElementById('placa').value.trim().toUpperCase();
     if (!placa) { alert('Digite a placa primeiro.'); return; }
     window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank');
 }
 
-// Toggle veículo pesado
+// ── Toggle veículo pesado ─────────────────────────────────────────────────────
 function togglePesado(cb) {
     document.getElementById('hint-pesado').style.display = cb.checked ? 'block' : 'none';
 }
 
-// Busca FIPE automática
+// ── Busca FIPE com debounce (dispara ao terminar de digitar) ──────────────────
+function agendarBuscaFipe() {
+    clearTimeout(fipeTimer);
+    fipeTimer = setTimeout(buscarFipeSeCompleto, 1500);
+}
+
+function buscarFipeSeCompleto() {
+    clearTimeout(fipeTimer);
+    const marca  = document.getElementById('marca').value.trim();
+    const modelo = document.getElementById('modelo').value.trim();
+    const ano    = document.getElementById('ano').value.trim();
+    if (marca && modelo && ano && ano.length === 4) {
+        buscarFipe();
+    }
+}
+
 async function buscarFipe() {
     const marca  = document.getElementById('marca').value.trim();
     const modelo = document.getElementById('modelo').value.trim();
@@ -730,7 +666,7 @@ async function buscarFipe() {
         return;
     }
     btn.disabled = true;
-    status.textContent = 'Buscando na tabela FIPE...';
+    status.textContent = '⏳ Buscando na tabela FIPE...';
     status.className = 'fipe-status fipe-loading';
 
     try {
@@ -744,7 +680,7 @@ async function buscarFipe() {
             document.getElementById('valor_fipe').value = data.valor_fipe;
             if (data.marca)  document.getElementById('marca').value  = data.marca;
             if (data.modelo) document.getElementById('modelo').value = data.modelo;
-            status.textContent = `✅ FIPE encontrado: ${data.valor_fipe_formatado} (cód. ${data.codigo_fipe})`;
+            status.textContent = `✅ FIPE: ${data.valor_fipe_formatado} (cód. ${data.codigo_fipe})`;
             status.className = 'fipe-status fipe-ok';
         }
     } catch {
@@ -755,7 +691,7 @@ async function buscarFipe() {
     }
 }
 
-// Toggle da seção de desconto
+// ── Toggle desconto ───────────────────────────────────────────────────────────
 function toggleDesconto() {
     const sec = document.getElementById('desconto-section');
     const btn = document.getElementById('btn-desconto-toggle');
@@ -764,7 +700,6 @@ function toggleDesconto() {
     if (!aberto) resetDesconto();
 }
 
-// Validação do PIN
 function validarPin(input) {
     const campos = document.getElementById('desconto-fields');
     const msg    = document.getElementById('pin-msg');
@@ -783,7 +718,6 @@ function validarPin(input) {
     }
 }
 
-// Selecionar tipo (desconto / acréscimo)
 function selecionarTipo(tipo) {
     tipoSelecionado = tipo;
     document.getElementById('btn-desc').className =
@@ -794,7 +728,6 @@ function selecionarTipo(tipo) {
     atualizarPreview();
 }
 
-// Atualizar campos ocultos e preview
 function atualizarDesconto(pct) {
     document.getElementById('desconto_valor').value = pct || 0;
     atualizarPreview();
@@ -809,11 +742,10 @@ function atualizarPreview() {
     prev.innerHTML = `<span style="color:${cor}; font-weight:600;">${sinal}${pct}% será aplicado nas mensalidades dos 3 planos.</span>`;
 }
 
-// Limpa desconto ao fechar
 function resetDesconto() {
     tipoSelecionado = '';
-    document.getElementById('input-pin').value = '';
-    document.getElementById('input-pct').value = '';
+    document.getElementById('input-pin').value   = '';
+    document.getElementById('input-pct').value   = '';
     document.getElementById('desconto-fields').classList.remove('visible');
     document.getElementById('desconto_tipo').value  = '';
     document.getElementById('desconto_valor').value = '0';
