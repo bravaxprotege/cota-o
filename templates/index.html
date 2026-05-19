@@ -5,366 +5,757 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bravax Protege — Cotação Online</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --red:      #e21a1a;
-            --red-dark: #b81414;
-            --red-deep: #8a0f0f;
-            --white:    #ffffff;
-            --gray-50:  #f9f9f9;
-            --gray-100: #f0f0f0;
-            --gray-300: #cccccc;
-            --gray-500: #888888;
-            --gray-700: #444444;
-            --gray-900: #1a1a1a;
+            --red:        #e21a1a;
+            --red-dark:   #b81414;
+            --red-deep:   #7a0e0e;
+            --red-glow:   rgba(226,26,26,0.15);
+            --black:      #0e0e0e;
+            --dark:       #161616;
+            --dark-2:     #1f1f1f;
+            --white:      #ffffff;
+            --off-white:  #f8f6f3;
+            --gray-100:   #efefef;
+            --gray-200:   #e2e2e2;
+            --gray-400:   #aaaaaa;
+            --gray-600:   #666666;
+            --gray-800:   #333333;
+            --green:      #15803d;
+            --green-light:#f0fdf4;
+            --font-display: 'Barlow Condensed', sans-serif;
+            --font-body:    'Plus Jakarta Sans', sans-serif;
         }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
+            font-family: var(--font-body);
+            background: var(--off-white);
+            color: var(--black);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ── HEADER ── */
+        /* ─────────────────────────────────────────
+           HEADER
+        ───────────────────────────────────────── */
         header {
-            background: var(--white);
-            border-bottom: 3px solid var(--red);
-            padding: 0.8rem 2rem;
+            background: var(--black);
+            padding: 0 2rem;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: sticky;
             top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            z-index: 200;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--red) 0%, #ff4444 50%, var(--red) 100%);
         }
 
-        .header-logo img { height: 52px; object-fit: contain; }
-        .header-logo-text { font-size: 1.6rem; font-weight: 800; color: var(--red); letter-spacing: -0.5px; }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .header-logo img {
+            height: 40px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+        .header-logo-text {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
         .header-badge {
-            background: var(--red); color: white;
-            font-size: 0.75rem; font-weight: 600;
-            padding: 0.3rem 0.8rem; border-radius: 20px; letter-spacing: 0.5px;
+            font-family: var(--font-body);
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2px;
+            letter-spacing: 0.5px;
         }
 
-        /* ── HERO ── */
+        /* ─────────────────────────────────────────
+           HERO
+        ───────────────────────────────────────── */
         .hero {
             position: relative;
-            background: linear-gradient(135deg, var(--red-deep) 0%, var(--red) 55%, #ff3d3d 100%);
-            color: white; padding: 4rem 2rem 3rem; text-align: center; overflow: hidden;
+            background: var(--dark);
+            color: var(--white);
+            padding: 5rem 2rem 4rem;
+            text-align: center;
+            overflow: hidden;
         }
-        .hero::before {
-            content: ''; position: absolute; inset: 0;
+
+        /* Fundo da imagem com opacidade */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
             background: url('/static/images/hero-bg.png') center / cover no-repeat;
-            opacity: 0.18; pointer-events: none;
+            opacity: 0.07;
         }
-        .hero-content { position: relative; z-index: 1; }
+
+        /* Linha diagonal decorativa */
+        .hero-slash {
+            position: absolute;
+            top: -40px; right: -60px;
+            width: 220px; height: 400px;
+            background: var(--red);
+            transform: rotate(-12deg);
+            opacity: 0.12;
+            pointer-events: none;
+        }
+        .hero-slash-2 {
+            position: absolute;
+            bottom: -60px; left: -40px;
+            width: 160px; height: 300px;
+            background: var(--red);
+            transform: rotate(-12deg);
+            opacity: 0.07;
+            pointer-events: none;
+        }
+
+        /* Texto BRAVAX como marca d'água */
+        .hero-watermark {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: clamp(6rem, 16vw, 14rem);
+            font-weight: 900;
+            color: rgba(255,255,255,0.025);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            pointer-events: none;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .hero-content { position: relative; z-index: 2; }
+
         .hero-tag {
-            display: inline-block; background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3); color: white;
-            font-size: 0.8rem; font-weight: 600; padding: 0.3rem 1rem;
-            border-radius: 20px; margin-bottom: 1.2rem; letter-spacing: 1px; text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--red);
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
+
         .hero h1 {
-            font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
-            line-height: 1.2; margin-bottom: 1rem;
-            max-width: 680px; margin-left: auto; margin-right: auto;
+            font-family: var(--font-display);
+            font-size: clamp(2.6rem, 6vw, 4.2rem);
+            font-weight: 900;
+            line-height: 1.0;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .hero h1 span { color: #ffd0d0; }
-        .hero p { font-size: 1.05rem; opacity: 0.9; max-width: 520px; margin: 0 auto; }
+        .hero h1 em {
+            font-style: normal;
+            color: var(--red);
+        }
+
+        .hero p {
+            font-size: 1rem;
+            opacity: 0.65;
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
         .hero-stats {
-            display: flex; justify-content: center; gap: 2.5rem;
-            margin-top: 2.5rem; flex-wrap: wrap;
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 3.5rem;
         }
-        .stat { text-align: center; }
-        .stat-number { font-size: 1.8rem; font-weight: 800; display: block; }
-        .stat-label  { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-divider { width: 1px; background: rgba(255,255,255,0.3); align-self: stretch; }
+        .stat {
+            text-align: center;
+            padding: 0 2.5rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat:last-child { border-right: none; }
 
-        /* ── LAYOUT ── */
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            display: block;
+            color: var(--white);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        /* ─────────────────────────────────────────
+           LAYOUT PRINCIPAL
+        ───────────────────────────────────────── */
         .main-wrapper {
-            max-width: 1100px; margin: 0 auto;
-            padding: 2.5rem 1.5rem 4rem;
-            display: grid; grid-template-columns: 1fr; gap: 2rem;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 5rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
         }
-        @media (min-width: 900px) {
-            .main-wrapper { grid-template-columns: 1fr 420px; gap: 3rem; align-items: start; }
+        @media (min-width: 920px) {
+            .main-wrapper {
+                grid-template-columns: 1fr 400px;
+                gap: 3rem;
+                align-items: start;
+            }
         }
 
-        /* ── LADO ESQUERDO ── */
-        .info-side { display: flex; flex-direction: column; gap: 1.5rem; }
-        .info-card {
-            background: white; border-radius: 12px; padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid var(--red);
-        }
-        .info-card h3 { color: var(--red); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .info-card p  { color: var(--gray-700); font-size: 0.93rem; }
+        /* ─────────────────────────────────────────
+           LADO ESQUERDO — INFO
+        ───────────────────────────────────────── */
+        .info-side { display: flex; flex-direction: column; gap: 1.25rem; }
 
+        /* Card de passos */
         .steps-card {
-            background: white; border-radius: 12px; padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            background: var(--white);
+            border-radius: 4px;
+            padding: 1.75rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
-        .steps-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; }
-        .step-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
-        .step-item:last-child { margin-bottom: 0; }
-        .step-num {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--red);
-            color: white; font-weight: 700; font-size: 0.8rem;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; margin-top: 2px;
+        .steps-card-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-800);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--gray-100);
         }
-        .step-text strong { display: block; font-size: 0.9rem; margin-bottom: 0.1rem; }
-        .step-text span   { font-size: 0.82rem; color: var(--gray-500); }
 
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.2rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+        .step-item:last-child { margin-bottom: 0; }
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 17px;
+            top: 34px;
+            bottom: -1.25rem;
+            width: 1px;
+            background: var(--gray-200);
+        }
+
+        .step-num {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--red);
+            color: white;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 2px 8px rgba(226,26,26,0.3);
+        }
+        .step-text strong {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.15rem;
+        }
+        .step-text span { font-size: 0.80rem; color: var(--gray-600); }
+
+        /* Info cards */
+        .info-card {
+            background: var(--white);
+            border-radius: 4px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            border-left: 3px solid var(--red);
+        }
+        .info-card-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .info-card h3 {
+            font-size: 0.87rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.2rem;
+        }
+        .info-card p { color: var(--gray-600); font-size: 0.82rem; line-height: 1.55; }
+
+        /* Instagram */
         .instagram-link {
-            display: flex; align-items: center; gap: 0.8rem;
-            background: white; border-radius: 12px; padding: 1rem 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            text-decoration: none; color: var(--gray-900);
+            display: flex; align-items: center; gap: 1rem;
+            background: var(--white);
+            border-radius: 4px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-decoration: none; color: var(--black);
             transition: box-shadow 0.2s, transform 0.2s;
         }
-        .instagram-link:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+        .instagram-link:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
         .insta-icon {
-            width: 40px; height: 40px; border-radius: 10px;
+            width: 42px; height: 42px; border-radius: 10px;
             background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .insta-icon svg { width: 22px; height: 22px; fill: white; }
-        .insta-text strong { display: block; font-size: 0.9rem; font-weight: 600; }
-        .insta-text span   { font-size: 0.8rem; color: var(--gray-500); }
+        .insta-text strong { display: block; font-size: 0.88rem; font-weight: 700; }
+        .insta-text span   { font-size: 0.78rem; color: var(--gray-600); }
 
-        /* ── FORMULÁRIO ── */
+        /* ─────────────────────────────────────────
+           CARD DO FORMULÁRIO
+        ───────────────────────────────────────── */
         .form-card {
-            background: white; border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10); overflow: hidden;
-            position: sticky; top: 88px;
+            background: var(--white);
+            border-radius: 4px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
         }
-        .form-header {
-            background: linear-gradient(135deg, var(--red-deep), var(--red));
-            padding: 1.5rem; color: white; text-align: center;
-        }
-        .form-header h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
-        .form-header p  { font-size: 0.83rem; opacity: 0.85; }
 
-        .form-body { padding: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
+        .form-header {
+            background: var(--dark);
+            padding: 1.6rem 1.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--red);
+        }
+        .form-header::after {
+            content: 'COTAÇÃO';
+            position: absolute;
+            right: 1.5rem;
+            bottom: -0.5rem;
+            font-family: var(--font-display);
+            font-size: 4rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.04);
+            letter-spacing: 3px;
+            pointer-events: none;
+            line-height: 1;
+        }
+        .form-header h2 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.15rem;
+            position: relative;
+        }
+        .form-header p {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.45);
+            font-weight: 400;
+            position: relative;
+        }
+
+        .form-body { padding: 1.5rem 1.75rem; }
+        .form-group { margin-bottom: 1.1rem; }
 
         label {
-            display: block; font-size: 0.82rem; font-weight: 600;
-            color: var(--gray-700); margin-bottom: 0.35rem; letter-spacing: 0.2px;
+            display: block;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--gray-600);
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
 
+        /* Inputs com estilo bottom-border */
         input[type="text"],
         input[type="number"],
         input[type="password"],
         select {
-            width: 100%; padding: 0.7rem 0.9rem;
-            border: 1.5px solid var(--gray-300); border-radius: 8px;
-            font-size: 0.95rem; font-family: inherit;
-            color: var(--gray-900); background: white;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            appearance: none; -webkit-appearance: none;
+            width: 100%;
+            padding: 0.65rem 0;
+            border: none;
+            border-bottom: 2px solid var(--gray-200);
+            border-radius: 0;
+            font-size: 0.93rem;
+            font-family: var(--font-body);
+            color: var(--black);
+            background: transparent;
+            transition: border-color 0.2s;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
+        input:focus,
+        select:focus {
+            border-bottom-color: var(--red);
+        }
+        input::placeholder { color: var(--gray-400); font-size: 0.88rem; }
+
         select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 0.9rem center;
-            padding-right: 2.2rem;
+            background-position: right 0.2rem center;
+            padding-right: 1.5rem;
             cursor: pointer;
         }
-        input:focus, select:focus {
-            border-color: var(--red); outline: none;
-            box-shadow: 0 0 0 3px rgba(226,26,26,0.12);
-        }
 
-        .input-row { display: flex; gap: 0.5rem; }
+        .input-row { display: flex; gap: 0.5rem; align-items: flex-end; }
         .input-row input { flex: 1; }
 
         .btn-secondary {
-            background: var(--gray-100); color: var(--gray-700);
-            border: 1.5px solid var(--gray-300); padding: 0 0.9rem;
-            border-radius: 8px; cursor: pointer; font-size: 0.78rem;
-            font-weight: 600; white-space: nowrap; transition: background 0.2s;
-            font-family: inherit;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            border: 1px solid var(--gray-200);
+            padding: 0.6rem 0.85rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s;
+            font-family: var(--font-body);
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
         }
-        .btn-secondary:hover { background: var(--gray-300); }
+        .btn-secondary:hover { background: var(--gray-200); border-color: var(--gray-400); }
 
-        .hint { font-size: 0.75rem; color: var(--gray-500); margin-top: 0.3rem; display: block; }
+        .hint {
+            font-size: 0.72rem;
+            color: var(--gray-400);
+            margin-top: 0.35rem;
+            display: block;
+            line-height: 1.4;
+        }
 
         .btn-fipe {
-            width: 100%; margin-top: 0.4rem; padding: 0.6rem;
-            background: var(--gray-50); border: 1.5px dashed var(--red);
-            border-radius: 8px; color: var(--red);
-            font-size: 0.82rem; font-weight: 600; cursor: pointer;
-            font-family: inherit; transition: background 0.2s;
+            width: 100%; margin-top: 0.6rem; padding: 0.55rem 0.9rem;
+            background: transparent;
+            border: 1.5px dashed var(--red);
+            border-radius: 3px;
+            color: var(--red);
+            font-size: 0.78rem; font-weight: 700;
+            cursor: pointer; font-family: var(--font-body);
+            transition: background 0.15s;
+            letter-spacing: 0.3px;
         }
-        .btn-fipe:hover    { background: #fff0f0; }
-        .btn-fipe:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-fipe:hover    { background: var(--red-glow); }
+        .btn-fipe:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .fipe-status { font-size: 0.75rem; margin-top: 0.3rem; min-height: 1.1em; }
-        .fipe-ok      { color: #16a34a; }
+        .fipe-status { font-size: 0.73rem; margin-top: 0.35rem; min-height: 1.1em; }
+        .fipe-ok      { color: var(--green); font-weight: 600; }
         .fipe-err     { color: var(--red); }
-        .fipe-loading { color: var(--gray-500); }
+        .fipe-loading { color: var(--gray-400); }
 
-        /* ── TOGGLE VEÍCULO PESADO ── */
-        .pesado-toggle {
-            display: flex; align-items: center; gap: 0.4rem;
-            padding: 0.4rem 0.7rem; background: #fff8f0;
-            border: 1.5px solid #f0a040; border-radius: 6px;
-            cursor: pointer; font-family: inherit; font-size: 0.78rem;
-            font-weight: 600; color: #92400e; width: 100%; text-align: left;
-            transition: background 0.2s; margin-bottom: 0;
+        /* Divider */
+        .divider {
+            text-align: center; font-size: 0.68rem;
+            color: var(--gray-400); letter-spacing: 1.5px;
+            text-transform: uppercase; font-weight: 600;
+            position: relative; margin: 0.9rem 0;
+            display: flex; align-items: center; gap: 0.75rem;
         }
-        .pesado-toggle:hover { background: #fff0dc; }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--gray-100);
+        }
+
+        /* ── VEÍCULO PESADO ── */
+        .pesado-toggle {
+            display: flex; align-items: center; gap: 0.55rem;
+            padding: 0.6rem 0.85rem;
+            background: #fffaf0;
+            border: 1.5px solid #f0a040;
+            border-radius: 3px;
+            cursor: pointer; font-family: var(--font-body);
+            font-size: 0.78rem; font-weight: 700; color: #92400e;
+            width: 100%; text-align: left; transition: background 0.15s;
+        }
+        .pesado-toggle:hover { background: #fff3d0; }
         .pesado-toggle input[type="checkbox"] {
             width: 14px; height: 14px; accent-color: #d97706;
-            cursor: pointer; border: none; padding: 0; margin: 0;
+            cursor: pointer; flex-shrink: 0;
         }
 
-        /* ── SEÇÃO DESCONTO ── */
+        /* ── DESCONTO ── */
         .desconto-toggle-btn {
-            display: flex; align-items: center; gap: 0.5rem;
-            background: none; border: none; color: var(--gray-500);
-            font-size: 0.78rem; font-weight: 600; cursor: pointer;
-            padding: 0.4rem 0; font-family: inherit; width: 100%;
-            justify-content: center; letter-spacing: 0.3px;
-            transition: color 0.2s; margin-top: 0.3rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            background: none; border: none;
+            color: var(--gray-400); font-size: 0.72rem; font-weight: 600;
+            cursor: pointer; padding: 0.5rem 0; font-family: var(--font-body);
+            width: 100%; letter-spacing: 0.5px; text-transform: uppercase;
+            transition: color 0.15s; margin-top: 0.4rem;
         }
-        .desconto-toggle-btn:hover { color: var(--gray-700); }
+        .desconto-toggle-btn:hover { color: var(--gray-600); }
         .desconto-toggle-btn .arrow { transition: transform 0.3s; display: inline-block; }
         .desconto-toggle-btn.open .arrow { transform: rotate(180deg); }
 
         .desconto-section {
-            display: none; background: #f8f8ff;
-            border: 1.5px solid #c7c7e8; border-radius: 10px;
+            display: none; background: #f5f5ff;
+            border: 1.5px solid #c7c7e8; border-radius: 4px;
             padding: 1rem; margin-top: 0.5rem;
         }
         .desconto-section.visible { display: block; }
         .desconto-pin-block { margin-bottom: 0.8rem; }
         .desconto-pin-block label { color: #4338ca; }
-        .desconto-pin-block input { border-color: #c7c7e8; letter-spacing: 4px; text-align: center; }
+        .desconto-pin-block input { border-bottom-color: #c7c7e8; letter-spacing: 6px; text-align: center; font-size: 1.2rem; }
+        .desconto-pin-block input:focus { border-bottom-color: #4338ca; }
         .desconto-fields { display: none; }
         .desconto-fields.visible { display: block; }
-        .tipo-row { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .tipo-row { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; margin-top: 0.4rem; }
         .tipo-btn {
-            flex: 1; padding: 0.5rem; border: 1.5px solid var(--gray-300);
-            border-radius: 7px; background: white; font-family: inherit;
-            font-size: 0.83rem; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; color: var(--gray-700);
+            flex: 1; padding: 0.55rem;
+            border: 1.5px solid var(--gray-200); border-radius: 3px;
+            background: white; font-family: var(--font-body);
+            font-size: 0.82rem; font-weight: 700; cursor: pointer;
+            transition: all 0.15s; color: var(--gray-600);
         }
-        .tipo-btn.selected-desc { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+        .tipo-btn.selected-desc { border-color: var(--green); background: var(--green-light); color: var(--green); }
         .tipo-btn.selected-acre { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
-
-        /* ── BOTÃO PRINCIPAL ── */
-        .btn-submit {
-            width: 100%; padding: 0.95rem;
-            background: linear-gradient(135deg, var(--red), var(--red-dark));
-            color: white; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 700; cursor: pointer;
-            font-family: inherit; letter-spacing: 0.3px;
-            transition: opacity 0.2s, transform 0.15s; margin-top: 0.5rem;
-        }
-        .btn-submit:hover  { opacity: 0.92; transform: translateY(-1px); }
-        .btn-submit:active { transform: translateY(0); }
 
         /* ── MENSAGENS ── */
         .msg {
-            border-radius: 8px; padding: 0.7rem 0.9rem;
-            font-size: 0.85rem; border: 1.5px solid; margin-bottom: 1rem;
+            border-radius: 3px; padding: 0.7rem 0.9rem;
+            font-size: 0.83rem; border-left: 3px solid;
+            margin-bottom: 1rem; background: var(--off-white);
+            border-color: transparent;
         }
-        .msg-error   { color: #b91c1c; background: #fef2f2; border-color: #fca5a5; }
-        .msg-success { color: #15803d; background: #f0fdf4; border-color: #86efac; }
-        .msg-warning { color: #92400e; background: #fffbeb; border-color: #fcd34d; }
+        .msg-error   { color: #b91c1c; background: #fef2f2; border-left-color: #e21a1a; }
+        .msg-warning { color: #92400e; background: #fffbeb; border-left-color: #f0a040; }
 
+        /* ── BOTÃO PRINCIPAL ── */
+        .btn-submit {
+            width: 100%; padding: 1rem;
+            background: var(--red);
+            color: white; border: none; border-radius: 3px;
+            font-family: var(--font-display);
+            font-size: 1.1rem; font-weight: 800;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-top: 0.6rem;
+            transition: background 0.15s, transform 0.1s;
+            position: relative; overflow: hidden;
+        }
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.4s;
+        }
+        .btn-submit:hover { background: var(--red-dark); }
+        .btn-submit:hover::after { transform: translateX(100%); }
+        .btn-submit:active { transform: scale(0.99); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ── LOADING ── */
         .loading-bar {
-            display: none; text-align: center; color: var(--red);
-            font-size: 0.85rem; font-weight: 600; padding: 0.5rem 0;
+            display: none; text-align: center;
+            color: var(--gray-600); font-size: 0.82rem; font-weight: 600;
+            padding: 0.6rem 0; letter-spacing: 0.3px;
         }
 
-        /* ── CAIXA DE DOWNLOAD ── */
+        /* ── DOWNLOAD / CELEBRAÇÃO ── */
         .download-box {
-            margin-top: 1rem; padding: 1.2rem;
-            background: #f0fdf4; border: 2px solid #86efac;
-            border-radius: 12px; text-align: center;
-            animation: slideIn 0.4s ease;
+            margin-top: 1.2rem;
+            border-radius: 4px;
+            overflow: hidden;
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+            box-shadow: 0 8px 32px rgba(21,128,61,0.2);
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .download-box .client-name {
-            font-size: 0.9rem; font-weight: 700; color: #15803d;
-            margin-bottom: 0.3rem;
+
+        .download-header {
+            background: var(--green);
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
         }
-        .download-box .plate-badge {
+        .download-shield {
+            width: 42px; height: 42px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.3rem;
+        }
+        .download-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem; font-weight: 800;
+            color: white; text-transform: uppercase;
+            letter-spacing: 1px; line-height: 1.1;
+        }
+        .download-subtitle {
+            font-size: 0.75rem; color: rgba(255,255,255,0.7);
+            margin-top: 0.1rem;
+        }
+
+        .download-body {
+            background: #f0fdf4;
+            padding: 1rem 1.4rem;
+        }
+        .download-meta {
+            display: flex; gap: 0.5rem; align-items: center;
+            margin-bottom: 0.8rem; flex-wrap: wrap;
+        }
+        .meta-tag {
             display: inline-block;
-            background: #15803d; color: white;
-            font-size: 0.75rem; font-weight: 700;
-            padding: 0.15rem 0.6rem; border-radius: 4px;
-            letter-spacing: 1px; margin-bottom: 0.8rem;
+            background: white;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 0.72rem; font-weight: 700;
+            padding: 0.2rem 0.6rem; border-radius: 2px;
+            letter-spacing: 0.5px;
         }
+
         .btn-download {
-            display: block; width: 100%; padding: 0.9rem;
-            background: #15803d; color: white; border: none;
-            border-radius: 10px; font-size: 1rem; font-weight: 700;
-            cursor: pointer; font-family: inherit; text-align: center;
-            text-decoration: none; transition: opacity 0.2s;
-            box-shadow: 0 3px 10px rgba(21,128,61,0.3);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%; padding: 0.9rem;
+            background: var(--green); color: white; border: none;
+            border-radius: 3px;
+            font-family: var(--font-display);
+            font-size: 1.05rem; font-weight: 800;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            cursor: pointer; text-decoration: none;
+            transition: background 0.15s, transform 0.1s;
+            box-shadow: 0 4px 14px rgba(21,128,61,0.35);
         }
-        .btn-download:hover { opacity: 0.9; }
+        .btn-download:hover { background: #166534; transform: translateY(-1px); }
+        .btn-download:active { transform: translateY(0); }
 
-        .divider {
-            text-align: center; font-size: 0.77rem; color: var(--gray-500);
-            position: relative; margin: 0.8rem 0;
+        /* ─────────────────────────────────────────
+           FOOTER
+        ───────────────────────────────────────── */
+        footer {
+            background: var(--black);
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 2.5rem 1.5rem;
         }
-        .divider::before, .divider::after {
-            content: ''; position: absolute; top: 50%;
-            width: 35%; height: 1px; background: var(--gray-100);
+        .footer-logo {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--red);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
         }
-        .divider::before { left: 0; }
-        .divider::after  { right: 0; }
+        footer p   { font-size: 0.8rem; }
+        footer a   { color: rgba(255,255,255,0.5); text-decoration: none; }
+        footer a:hover { color: rgba(255,255,255,0.9); }
 
-        /* ── RODAPÉ ── */
-        footer { background: var(--gray-900); color: white; text-align: center; padding: 2rem 1.5rem; }
-        .footer-logo { font-size: 1.3rem; font-weight: 800; color: var(--red); margin-bottom: 0.4rem; }
-        footer p  { font-size: 0.82rem; color: #999; }
-        footer a  { color: #ccc; text-decoration: none; }
-        footer a:hover { color: white; }
+        /* ─────────────────────────────────────────
+           RESPONSIVO
+        ───────────────────────────────────────── */
+        @media (max-width: 480px) {
+            header { padding: 0 1rem; }
+            .hero  { padding: 3.5rem 1.25rem 3rem; }
+            .hero-stats { gap: 0; }
+            .stat { padding: 0 1.25rem; }
+            .main-wrapper { padding: 2rem 1rem 3rem; }
+            .form-body { padding: 1.25rem; }
+        }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ════════════════════════════════════════
+     HEADER
+════════════════════════════════════════ -->
 <header>
     <div class="header-logo">
         <img src="/static/images/logo.png" alt="Bravax Protege"
              onerror="this.style.display='none'; document.querySelector('.header-logo-text').style.display='block'">
-        <span class="header-logo-text" style="display:none">BRAVAX Protege</span>
+        <span class="header-logo-text" style="display:none">BRAVAX</span>
     </div>
     <span class="header-badge">🛡️ Mais de 20 anos protegendo Recife</span>
 </header>
 
-<!-- HERO -->
+<!-- ════════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
 <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-slash"></div>
+    <div class="hero-slash-2"></div>
+    <div class="hero-watermark">BRAVAX</div>
+
     <div class="hero-content">
-        <div class="hero-tag">Proteção veicular personalizada</div>
-        <h1>Sua cotação em <span>segundos</span>, sua proteção para sempre</h1>
+        <div class="hero-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 0L6.18 3.45H9.76L6.91 5.59L8.09 9.04L5 6.9L1.91 9.04L3.09 5.59L0.24 3.45H3.82L5 0Z"/></svg>
+            Proteção veicular personalizada
+        </div>
+
+        <h1>Sua cotação em <em>segundos</em>,<br>sua proteção para sempre</h1>
+
         <p>Preencha os dados do veículo e gere na hora uma cotação completa em PDF, pronta para apresentar ao cliente.</p>
+
         <div class="hero-stats">
             <div class="stat">
                 <span class="stat-number">20+</span>
                 <span class="stat-label">Anos no mercado</span>
             </div>
-            <div class="stat-divider"></div>
             <div class="stat">
                 <span class="stat-number">24h</span>
                 <span class="stat-label">Assistência</span>
             </div>
-            <div class="stat-divider"></div>
             <div class="stat">
                 <span class="stat-number">100%</span>
                 <span class="stat-label">Sem burocracia</span>
@@ -373,13 +764,17 @@
     </div>
 </section>
 
-<!-- CONTEÚDO PRINCIPAL -->
+<!-- ════════════════════════════════════════
+     CONTEÚDO PRINCIPAL
+════════════════════════════════════════ -->
 <div class="main-wrapper">
 
-    <!-- LADO ESQUERDO -->
+    <!-- ── LADO ESQUERDO ── -->
     <div class="info-side">
+
         <div class="steps-card">
-            <h3>Como funciona?</h3>
+            <div class="steps-card-title">Como funciona</div>
+
             <div class="step-item">
                 <div class="step-num">1</div>
                 <div class="step-text">
@@ -397,7 +792,7 @@
             <div class="step-item">
                 <div class="step-num">3</div>
                 <div class="step-text">
-                    <strong>Valor FIPE preenchido automaticamente</strong>
+                    <strong>FIPE preenchido automaticamente</strong>
                     <span>Ao terminar de preencher o ano, o sistema busca sozinho</span>
                 </div>
             </div>
@@ -411,16 +806,27 @@
         </div>
 
         <div class="info-card">
-            <h3>🛡️ Assistência 24 horas</h3>
-            <p>Guincho, chaveiro, troca de pneu e muito mais. Seu cliente fica protegido em qualquer situação, a qualquer hora.</p>
+            <div class="info-card-icon">🛡️</div>
+            <div>
+                <h3>Assistência 24 horas</h3>
+                <p>Guincho, chaveiro, troca de pneu e muito mais. Seu cliente fica protegido em qualquer situação, a qualquer hora.</p>
+            </div>
         </div>
+
         <div class="info-card">
-            <h3>⚡ Cobertura imediata</h3>
-            <p>Assim que o contrato é assinado, o pagamento confirmado e a vistoria realizada, o veículo já está protegido.</p>
+            <div class="info-card-icon">⚡</div>
+            <div>
+                <h3>Cobertura imediata</h3>
+                <p>Assim que o contrato é assinado, o pagamento confirmado e a vistoria realizada, o veículo já está protegido.</p>
+            </div>
         </div>
+
         <div class="info-card">
-            <h3>🤝 Sem complicação</h3>
-            <p>Processo simples, sem burocracia. A Bravax cuida de tudo para que você e seu cliente fiquem tranquilos.</p>
+            <div class="info-card-icon">🤝</div>
+            <div>
+                <h3>Sem complicação</h3>
+                <p>Processo simples, sem burocracia. A Bravax cuida de tudo para que você e seu cliente fiquem tranquilos.</p>
+            </div>
         </div>
 
         <a class="instagram-link" href="https://www.instagram.com/bravaxprotege/" target="_blank">
@@ -432,14 +838,17 @@
                 <span>Siga a Bravax no Instagram</span>
             </div>
         </a>
-    </div>
 
-    <!-- FORMULÁRIO -->
+    </div><!-- /info-side -->
+
+    <!-- ── FORMULÁRIO ── -->
     <div class="form-card" id="form-card">
+
         <div class="form-header">
             <h2>Gerar Cotação</h2>
-            <p>Preencha os dados abaixo e receba o PDF na hora</p>
+            <p>Preencha os dados e receba o PDF na hora</p>
         </div>
+
         <div class="form-body">
 
             {% if error %}
@@ -452,46 +861,44 @@
             <form method="POST" action="/" id="cotacao-form">
 
                 <div class="form-group">
-                    <label for="nome">Nome do Cliente *</label>
+                    <label for="nome">Nome do Cliente</label>
                     <input type="text" id="nome" name="nome"
                            placeholder="Nome completo do cliente" required
                            value="{{ form_data.nome if form_data else '' }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="placa">Placa do Veículo *</label>
+                    <label for="placa">Placa do Veículo</label>
                     <div class="input-row">
                         <input type="text" id="placa" name="placa"
-                               placeholder="ABC1D23" required
-                               maxlength="8"
-                               style="text-transform:uppercase; letter-spacing:2px;"
+                               placeholder="ABC1D23" required maxlength="8"
+                               style="text-transform:uppercase; letter-spacing:3px; font-weight:700;"
                                value="{{ form_data.placa if form_data else '' }}"
                                oninput="this.value = this.value.replace(/\s/g,'').toUpperCase()">
                         <button type="button" class="btn-secondary" onclick="abrirPlacaFipe()">
-                            🔎 Consultar placa
+                            🔎 Consultar
                         </button>
                     </div>
-                    <span class="hint">Clique em "Consultar placa" e copie marca, modelo e ano para os campos abaixo</span>
+                    <span class="hint">Clique em "Consultar" e copie marca, modelo e ano abaixo</span>
                 </div>
 
                 <div class="divider">dados do veículo</div>
 
-                <!-- VEÍCULO PESADO -->
                 <div class="form-group">
-                    <label class="pesado-toggle" for="veiculo_pesado">
+                    <label class="pesado-toggle" for="veiculo_pesado" style="text-transform:none; letter-spacing:0; font-size:0.78rem;">
                         <input type="checkbox" id="veiculo_pesado" name="veiculo_pesado"
                                onchange="togglePesado(this)"
                                {{ 'checked' if form_data and form_data.veiculo_pesado else '' }}>
-                        🚛 Este veículo é pesado (caminhão, van, etc.)
+                        🚛 Veículo pesado (caminhão, van, etc.)
                     </label>
                     <span class="hint" id="hint-pesado"
                           style="display:{{ 'block' if form_data and form_data.veiculo_pesado else 'none' }}; color:#92400e;">
-                        Veículo pesado: cotação gerada apenas com o Plano Diamante Pesado.
+                        Cotação gerada apenas com o Plano Diamante Pesado.
                     </span>
                 </div>
 
                 <div class="form-group">
-                    <label for="marca">Marca *</label>
+                    <label for="marca">Marca</label>
                     <input type="text" id="marca" name="marca"
                            placeholder="Ex: Volkswagen, Fiat, Toyota" required
                            value="{{ form_data.marca if form_data else '' }}"
@@ -499,7 +906,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="modelo">Modelo *</label>
+                    <label for="modelo">Modelo</label>
                     <input type="text" id="modelo" name="modelo"
                            placeholder="Ex: Virtus, Corolla, Onix" required
                            value="{{ form_data.modelo if form_data else '' }}"
@@ -507,7 +914,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="ano">Ano do Modelo *</label>
+                    <label for="ano">Ano do Modelo</label>
                     <input type="number" id="ano" name="ano"
                            placeholder="Ex: 2023" min="1990" max="2030" required
                            value="{{ form_data.ano if form_data else '' }}"
@@ -515,7 +922,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="valor_fipe">Valor FIPE (R$) *</label>
+                    <label for="valor_fipe">Valor FIPE (R$)</label>
                     <input type="number" step="0.01" id="valor_fipe" name="valor_fipe"
                            placeholder="Preenchido automaticamente" required
                            value="{{ form_data.valor_fipe if form_data else '' }}">
@@ -529,25 +936,25 @@
                     <label for="categoria">Categoria</label>
                     <select id="categoria" name="categoria">
                         <option value="PASSEIO"    {{ 'selected' if not form_data or form_data.categoria in ('', 'PASSEIO') else '' }}>PASSEIO</option>
-                        <option value="UTILITÁRIO" {{ 'selected' if form_data and form_data.categoria == 'UTILITÁRIO' else '' }}>UTILITÁRIO</option>
-                        <option value="MOTO"       {{ 'selected' if form_data and form_data.categoria == 'MOTO' else '' }}>MOTO</option>
-                        <option value="VAN"        {{ 'selected' if form_data and form_data.categoria == 'VAN' else '' }}>VAN</option>
                         <option value="SUV"        {{ 'selected' if form_data and form_data.categoria == 'SUV' else '' }}>SUV</option>
                         <option value="PICKUP"     {{ 'selected' if form_data and form_data.categoria == 'PICKUP' else '' }}>PICKUP</option>
+                        <option value="UTILITÁRIO" {{ 'selected' if form_data and form_data.categoria == 'UTILITÁRIO' else '' }}>UTILITÁRIO</option>
+                        <option value="VAN"        {{ 'selected' if form_data and form_data.categoria == 'VAN' else '' }}>VAN</option>
+                        <option value="MOTO"       {{ 'selected' if form_data and form_data.categoria == 'MOTO' else '' }}>MOTO</option>
                     </select>
                 </div>
 
-                <!-- CAMPOS OCULTOS DO DESCONTO -->
+                <!-- Campos ocultos do desconto -->
                 <input type="hidden" id="desconto_tipo"  name="desconto_tipo"  value="">
                 <input type="hidden" id="desconto_valor" name="desconto_valor" value="0">
                 <input type="hidden" id="desconto_pin"   name="desconto_pin"   value="">
 
                 <button type="submit" class="btn-submit" id="btn-submit">
-                    📄 Gerar Cotação em PDF
+                    Gerar Cotação em PDF
                 </button>
             </form>
 
-            <!-- BOTÃO OCULTO DE DESCONTO -->
+            <!-- Ajuste de valor (PIN protegido) -->
             <button class="desconto-toggle-btn" id="btn-desconto-toggle" onclick="toggleDesconto()">
                 <span class="arrow">▾</span> ajuste de valor
             </button>
@@ -560,7 +967,7 @@
                     <span class="hint" id="pin-msg"></span>
                 </div>
                 <div class="desconto-fields" id="desconto-fields">
-                    <label style="margin-bottom:0.5rem; display:block;">Tipo de ajuste</label>
+                    <label style="text-transform:none; letter-spacing:0; font-size:0.78rem; font-weight:600; color:#444; margin-bottom:0.4rem;">Tipo de ajuste</label>
                     <div class="tipo-row">
                         <button type="button" class="tipo-btn" id="btn-desc"
                                 onclick="selecionarTipo('desconto')">↓ Desconto</button>
@@ -570,32 +977,47 @@
                     <label for="input-pct">Percentual (%)</label>
                     <input type="number" id="input-pct" min="0.1" max="99" step="0.1"
                            placeholder="Ex: 5" oninput="atualizarDesconto(this.value)">
-                    <span class="hint" id="desconto-preview" style="margin-top:0.4rem;"></span>
+                    <span class="hint" id="desconto-preview" style="margin-top:0.5rem;"></span>
                 </div>
             </div>
 
-            <div class="loading-bar" id="loading">⏳ Gerando sua cotação, aguarde...</div>
+            <div class="loading-bar" id="loading">
+                ⏳ Gerando sua cotação, aguarde...
+            </div>
 
             {% if pdf_filename %}
             <div class="download-box" id="download-box">
-                {% if form_data %}
-                <div class="client-name">✅ Cotação gerada — {{ form_data.nome }}</div>
-                <span class="plate-badge">{{ form_data.placa }}</span>
-                {% else %}
-                <div class="client-name">✅ Cotação gerada com sucesso!</div>
-                {% endif %}
-                <a href="{{ url_for('download_file', filename=pdf_filename) }}"
-                   class="btn-download" target="_blank">
-                    ⬇️ Baixar PDF
-                </a>
+                <div class="download-header">
+                    <div class="download-shield">🛡️</div>
+                    <div>
+                        <div class="download-title">Cotação gerada!</div>
+                        <div class="download-subtitle">Pronta para enviar ao cliente</div>
+                    </div>
+                </div>
+                <div class="download-body">
+                    {% if form_data %}
+                    <div class="download-meta">
+                        <span class="meta-tag">👤 {{ form_data.nome }}</span>
+                        <span class="meta-tag">🚗 {{ form_data.placa }}</span>
+                        {% if form_data.marca %}<span class="meta-tag">{{ form_data.marca }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('download_file', filename=pdf_filename) }}"
+                       class="btn-download" target="_blank">
+                        ⬇️ Baixar PDF
+                    </a>
+                </div>
             </div>
             {% endif %}
 
-        </div>
-    </div>
-</div>
+        </div><!-- /form-body -->
+    </div><!-- /form-card -->
 
-<!-- RODAPÉ -->
+</div><!-- /main-wrapper -->
+
+<!-- ════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
 <footer>
     <div class="footer-logo">BRAVAX Protege</div>
     <p>Trazendo segurança nas ruas do nosso Recife há mais de 20 anos.</p>
@@ -617,11 +1039,11 @@ document.getElementById('cotacao-form').addEventListener('submit', function () {
     btn.textContent = '⏳ Gerando...';
 });
 
-// ── Auto-scroll para o download se existir ───────────────────────────────────
+// ── Auto-scroll para download ao carregar ────────────────────────────────────
 window.addEventListener('load', function () {
     const box = document.getElementById('download-box');
     if (box) {
-        setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+        setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
     }
 });
 
@@ -632,12 +1054,12 @@ function abrirPlacaFipe() {
     window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank');
 }
 
-// ── Toggle veículo pesado ─────────────────────────────────────────────────────
+// ── Toggle pesado ─────────────────────────────────────────────────────────────
 function togglePesado(cb) {
     document.getElementById('hint-pesado').style.display = cb.checked ? 'block' : 'none';
 }
 
-// ── Busca FIPE com debounce (dispara ao terminar de digitar) ──────────────────
+// ── Busca FIPE automática ─────────────────────────────────────────────────────
 function agendarBuscaFipe() {
     clearTimeout(fipeTimer);
     fipeTimer = setTimeout(buscarFipeSeCompleto, 1500);
@@ -648,9 +1070,7 @@ function buscarFipeSeCompleto() {
     const marca  = document.getElementById('marca').value.trim();
     const modelo = document.getElementById('modelo').value.trim();
     const ano    = document.getElementById('ano').value.trim();
-    if (marca && modelo && ano && ano.length === 4) {
-        buscarFipe();
-    }
+    if (marca && modelo && ano && ano.length === 4) buscarFipe();
 }
 
 async function buscarFipe() {
@@ -674,13 +1094,13 @@ async function buscarFipe() {
         const resp = await fetch('/api/buscar-fipe?' + params);
         const data = await resp.json();
         if (!resp.ok || data.erro) {
-            status.textContent = '❌ ' + (data.erro || 'Não foi possível encontrar o valor FIPE.');
+            status.textContent = '❌ ' + (data.erro || 'Valor FIPE não encontrado.');
             status.className = 'fipe-status fipe-err';
         } else {
             document.getElementById('valor_fipe').value = data.valor_fipe;
             if (data.marca)  document.getElementById('marca').value  = data.marca;
             if (data.modelo) document.getElementById('modelo').value = data.modelo;
-            status.textContent = `✅ FIPE: ${data.valor_fipe_formatado} (cód. ${data.codigo_fipe})`;
+            status.textContent = `✅ FIPE: ${data.valor_fipe_formatado} — cód. ${data.codigo_fipe}`;
             status.className = 'fipe-status fipe-ok';
         }
     } catch {
@@ -691,10 +1111,10 @@ async function buscarFipe() {
     }
 }
 
-// ── Toggle desconto ───────────────────────────────────────────────────────────
+// ── Desconto ──────────────────────────────────────────────────────────────────
 function toggleDesconto() {
-    const sec = document.getElementById('desconto-section');
-    const btn = document.getElementById('btn-desconto-toggle');
+    const sec   = document.getElementById('desconto-section');
+    const btn   = document.getElementById('btn-desconto-toggle');
     const aberto = sec.classList.toggle('visible');
     btn.classList.toggle('open', aberto);
     if (!aberto) resetDesconto();
@@ -703,12 +1123,11 @@ function toggleDesconto() {
 function validarPin(input) {
     const campos = document.getElementById('desconto-fields');
     const msg    = document.getElementById('pin-msg');
-    const val    = input.value;
-    if (val.length < 4) { campos.classList.remove('visible'); msg.textContent = ''; return; }
-    if (val === PIN_CORRETO) {
+    if (input.value.length < 4) { campos.classList.remove('visible'); msg.textContent = ''; return; }
+    if (input.value === PIN_CORRETO) {
         campos.classList.add('visible');
         msg.textContent = '✅ PIN correto';
-        msg.style.color = '#16a34a';
+        msg.style.color = '#15803d';
         document.getElementById('desconto_pin').value = PIN_CORRETO;
     } else {
         campos.classList.remove('visible');
@@ -738,8 +1157,8 @@ function atualizarPreview() {
     const prev = document.getElementById('desconto-preview');
     if (!tipoSelecionado || pct <= 0) { prev.textContent = ''; return; }
     const sinal = tipoSelecionado === 'desconto' ? '−' : '+';
-    const cor   = tipoSelecionado === 'desconto' ? '#16a34a' : '#dc2626';
-    prev.innerHTML = `<span style="color:${cor}; font-weight:600;">${sinal}${pct}% será aplicado nas mensalidades dos 3 planos.</span>`;
+    const cor   = tipoSelecionado === 'desconto' ? '#15803d' : '#dc2626';
+    prev.innerHTML = `<span style="color:${cor}; font-weight:700;">${sinal}${pct}% aplicado nas mensalidades dos 3 planos.</span>`;
 }
 
 function resetDesconto() {
