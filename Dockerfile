@@ -3,18 +3,18 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Dependências do sistema:
-#   - WeasyPrint precisa de Pango, Cairo e GDK-Pixbuf
-#   - fontconfig para registrar a fonte Arial Black
-#   - LibreOffice mantido como fallback (pode ser removido em versão futura)
+# Dependências do sistema para WeasyPrint (Pango, Cairo, GDK-Pixbuf)
+# e fontconfig para registrar a fonte Arial Black
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libreoffice \
         libpango-1.0-0 \
         libpangocairo-1.0-0 \
+        libpangoft2-1.0-0 \
+        libharfbuzz0b \
         libcairo2 \
         libgdk-pixbuf2.0-0 \
         libffi-dev \
+        shared-mime-info \
         fontconfig \
         fonts-liberation \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
