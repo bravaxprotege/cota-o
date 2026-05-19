@@ -1,36 +1,65 @@
-# Use uma imagem base do Python
+# Imagem base Python
 FROM python:3.10-slim
 
-# Defina o diretório de trabalho
 WORKDIR /app
 
-# Instale o LibreOffice e outras dependências do sistema
-# O comando apt-get update pode falhar às vezes, adicionamos retry
+# Dependências do sistema:
+#   - WeasyPrint precisa de Pango, Cairo e GDK-Pixbuf
+#   - fontconfig para registrar a fonte Arial Black
+#   - LibreOffice mantido como fallback (pode ser removido em versão futura)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libreoffice wget ca-certificates fonts-liberation fontconfig && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+        libreoffice \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libcairo2 \
+        libgdk-pixbuf2.0-0 \
+        libffi-dev \
+        fontconfig \
+        fonts-liberation \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instala Arial Black (necessária para o template da cotação)
+# Instala Arial Black (necessária para o PDF gerado)
 COPY fonts/ariblk.ttf /usr/share/fonts/truetype/ariblk.ttf
 RUN fc-cache -fv
 
-# Copie o arquivo de requisitos
+# Dependências Python
 COPY requirements.txt requirements.txt
-
-# Instale as dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie o restante do código da aplicação
+# Código da aplicação
 COPY . .
 
-# Crie o diretório de saída se não existir
+# Extrai imagens de fundo do template PPTX para static/slides/
+# (executado uma vez no build, não a cada requisição)
+RUN python -c "
+import zipfile, os, hashlib
+os.makedirs('static/slides', exist_ok=True)
+pptx = 'input_files/cotacao_auto.pptx'
+if os.path.exists(pptx):
+    from pptx import Presentation
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+    prs = Presentation(pptx)
+    for i, slide in enumerate(prs.slides):
+        for shape in slide.shapes:
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                img = shape.image
+                h = hashlib.md5(img.blob).hexdigest()[:8]
+                name = f'slide{i+1}_{shape.name.replace(\" \",\"_\")}_{h}.{img.ext}'
+                path = f'static/slides/{name}'
+                if not os.path.exists(path):
+                    with open(path, 'wb') as f:
+                        f.write(img.blob)
+                    print(f'Extracted: {name}')
+                break  # apenas a primeira imagem (background) por slide
+    print('Extração concluída.')
+else:
+    print('AVISO: template PPTX não encontrado.')
+"
+
+# Diretório de output
 RUN mkdir -p /app/output
 
-# Exponha a porta que o Gunicorn usará
 EXPOSE 8080
 
-# Comando para rodar a aplicação com Gunicorn
-# Use 0.0.0.0 para aceitar conexões externas
-# Ajuste o número de workers (-w) conforme necessário (e.g., 2 * num_cores + 1)
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8080", "app:app"]

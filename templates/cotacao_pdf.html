@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+
+/* ── Fonte Arial Black embutida ────────────────────────────── */
+@font-face {
+    font-family: 'ArialBlack';
+    src: url('fonts/ariblk.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* ── Tamanho da página = tamanho exato dos slides ─────────── */
+@page {
+    size: 19.05cm 27.5167cm;
+    margin: 0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'ArialBlack', 'Arial Black', Arial, sans-serif;
+    font-weight: 900;
+}
+
+/* ── Container de cada slide ──────────────────────────────── */
+.slide {
+    position: relative;
+    width:  19.05cm;
+    height: 27.5167cm;
+    overflow: hidden;
+    break-after: page;
+    page-break-after: always;
+}
+.slide:last-child {
+    break-after: auto;
+    page-break-after: auto;
+}
+
+/* ── Imagem de fundo ocupa o slide inteiro ────────────────── */
+.bg {
+    position: absolute;
+    top: 0; left: 0;
+    width:  19.05cm;
+    height: 27.5167cm;
+    display: block;
+}
+
+/* ── Caixa de texto posicionada ───────────────────────────── */
+.f {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'ArialBlack', 'Arial Black', Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+    word-spacing: 0;
+    white-space: nowrap;
+}
+
+/* ── Variantes de tamanho / cor ───────────────────────────── */
+.f-capa  { font-size: 20pt; color: #ffffff; }
+.f-dados { font-size: 24pt; color: #1a1a1a; }
+.f-preco { font-size: 44pt; color: #FFC000; }
+.f-plat  { font-size: 48pt; color: #FFC000; }
+
+</style>
+</head>
+<body>
+
+{# ═══════════════════════════════════════════
+   SLIDE 1 — Capa
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[1] }}">
+    <div class="f f-capa" style="left:1.852cm; top:12.118cm; width:5.080cm; height:1.966cm;">
+        {{ nome_cliente }}
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════
+   SLIDE 2 — Estático
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[2] }}">
+</div>
+
+{# ═══════════════════════════════════════════
+   SLIDE 3 — Estático
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[3] }}">
+</div>
+
+{# ═══════════════════════════════════════════
+   SLIDE 4 — Ficha do veículo
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[4] }}">
+
+    {# Nome — pos=(2.593, 4.633) size=6.562x0.971cm #}
+    <div class="f f-dados" style="left:2.593cm; top:4.633cm; width:6.562cm; height:0.971cm;">
+        {{ nome_cliente }}
+    </div>
+
+    {# Placa — pos=(10.372, 4.443) size=6.085x1.399cm #}
+    <div class="f f-dados" style="left:10.372cm; top:4.443cm; width:6.085cm; height:1.399cm;">
+        {{ placa }}
+    </div>
+
+    {# Marca — pos=(2.593, 8.023) size=6.085x1.228cm #}
+    <div class="f f-dados" style="left:2.593cm; top:8.023cm; width:6.085cm; height:1.228cm;">
+        {{ marca }}
+    </div>
+
+    {# Modelo — pos=(10.372, 7.974) size=6.085x1.228cm #}
+    <div class="f f-dados" style="left:10.372cm; top:7.974cm; width:6.085cm; height:1.228cm;">
+        {{ modelo }}
+    </div>
+
+    {# Ano — pos=(3.069, 11.491) size=5.027x1.228cm #}
+    <div class="f f-dados" style="left:3.069cm; top:11.491cm; width:5.027cm; height:1.228cm;">
+        {{ ano }}
+    </div>
+
+    {# Categoria — pos=(11.165, 11.670) size=5.027x1.057cm #}
+    <div class="f f-dados" style="left:11.165cm; top:11.670cm; width:5.027cm; height:1.057cm;">
+        {{ categoria }}
+    </div>
+
+    {# Valor FIPE — pos=(5.842, 15.412) size=7.144x1.399cm #}
+    <div class="f f-dados" style="left:5.842cm; top:15.412cm; width:7.144cm; height:1.399cm;">
+        {{ valor_fipe_fmt }}
+    </div>
+</div>
+
+{% if not veiculo_pesado %}
+{# ═══════════════════════════════════════════
+   SLIDE 5 — Plano Ouro
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[5] }}">
+
+    {# Adesão — pos=(1.566, 23.633) size=6.932x2.137cm #}
+    <div class="f f-preco" style="left:1.566cm; top:23.633cm; width:6.932cm; height:2.137cm;">
+        {{ adesao }}
+    </div>
+
+    {# Ouro — pos=(11.610, 23.431) size=6.932x2.137cm #}
+    <div class="f f-preco" style="left:11.610cm; top:23.431cm; width:6.932cm; height:2.137cm;">
+        {{ preco_ouro }}
+    </div>
+</div>
+{% endif %}
+
+{# ═══════════════════════════════════════════
+   SLIDE 6 — Plano Diamante (ou Pesado)
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[6] }}">
+
+    {# Adesão — pos=(1.937, 23.971) size=6.879x2.137cm #}
+    <div class="f f-preco" style="left:1.937cm; top:23.971cm; width:6.879cm; height:2.137cm;">
+        {{ adesao }}
+    </div>
+
+    {# Diamante / Pesado — pos=(11.726, 23.971) size=6.350x2.137cm #}
+    <div class="f f-preco" style="left:11.726cm; top:23.971cm; width:6.350cm; height:2.137cm;">
+        {% if veiculo_pesado %}{{ preco_pesado }}{% else %}{{ preco_diamante }}{% endif %}
+    </div>
+</div>
+
+{% if not veiculo_pesado %}
+{# ═══════════════════════════════════════════
+   SLIDE 7 — Plano Platinum
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[7] }}">
+
+    {# Adesão — pos=(1.884, 23.400) size=7.144x2.308cm #}
+    <div class="f f-plat" style="left:1.884cm; top:23.400cm; width:7.144cm; height:2.308cm;">
+        {{ adesao }}
+    </div>
+
+    {# Platinum — pos=(11.695, 23.230) size=7.355x2.308cm #}
+    <div class="f f-plat" style="left:11.695cm; top:23.230cm; width:7.355cm; height:2.308cm;">
+        {{ preco_platinum }}
+    </div>
+</div>
+{% endif %}
+
+{# ═══════════════════════════════════════════
+   SLIDE 8 — Final estático
+═══════════════════════════════════════════ #}
+<div class="slide">
+    <img class="bg" src="{{ bg[8] }}">
+</div>
+
+</body>
+</html>

@@ -10,16 +10,12 @@ import logging
 import traceback
 import requests as http_requests
 
-# Importar as funções dos scripts criados (Garante que os .py estejam no mesmo nível)
+# Importar módulos locais
 try:
     from calculo_precos import calcular_precos_planos
-    from preenche_cotacao import preencher_cotacao_pptx
-    from converte_pdf import converter_pptx_para_pdf
+    from gera_pdf import gerar_pdf_cotacao
 except ImportError as import_err:
-     # Logar erro crítico se módulos essenciais não forem encontrados
-     logging.exception(f"ERRO CRÍTICO: Falha ao importar módulos locais necessários: {import_err}")
-     # Poderia até levantar o erro para impedir a aplicação de iniciar incorretamente
-     # raise import_err 
+    logging.exception(f"ERRO CRÍTICO: Falha ao importar módulos locais: {import_err}")
 
 app = Flask(__name__)
 
@@ -268,80 +264,25 @@ def index():
         # Gerar nomes de arquivo únicos
         unique_id = str(uuid.uuid4())[:8]
         safe_placa = placa.replace(' ', '_').replace('/', '_').replace('-', '') # Mais sanitização
-        output_pptx_filename = f"cotacao_{safe_placa}_{unique_id}.pptx"
-        output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf" # Nome esperado do PDF
+        output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf"
+        output_pdf_path    = os.path.join(app.config["OUTPUT_DIR"], output_pdf_filename)
 
-        # Caminhos completos dentro do diretório de saída configurado
-        output_pptx_path = os.path.join(app.config["OUTPUT_DIR"], output_pptx_filename)
-        # O caminho completo do PDF será determinado pela função de conversão
+        # ── Geração do PDF via HTML + WeasyPrint ──────────────────────────
+        try:
+            logging.info(f"Gerando PDF HTML para {output_pdf_path}")
+            sucesso = gerar_pdf_cotacao(dados_cotacao, output_pdf_path)
 
-        # ---- Bloco Principal: Preencher, Converter, Limpar ----
-        # Este bloco try...except engloba todo o processo de geração
-        try: 
-            # 1. Verificar Template PPTX (os.path.exists)
-            logging.info(f"Verificando existência do template: {TEMPLATE_PPTX}")
-            # Log extra para listar conteúdo (ajuda a depurar se o arquivo está lá)
-            try:
-                input_files_list = os.listdir(INPUT_DIR)
-                logging.info(f"Conteúdo de {INPUT_DIR}: {input_files_list}")
-            except Exception as list_e:
-                logging.error(f"Erro ao listar diretório {INPUT_DIR}: {list_e}")
+            if sucesso and os.path.exists(output_pdf_path):
+                success      = f"Cotação para {nome_cliente} (placa {placa}) gerada com sucesso!"
+                pdf_filename = output_pdf_filename
+                logging.info(f"PDF gerado: {output_pdf_path}")
+            else:
+                error = "Erro ao gerar o PDF da cotação. Verifique os logs do servidor."
+                logging.error("gerar_pdf_cotacao retornou False ou arquivo não foi criado.")
 
-            if not os.path.exists(TEMPLATE_PPTX):
-                error = f"Erro interno: Arquivo modelo de cotação ({TEMPLATE_PPTX}) não encontrado."
-                logging.error(error)
-                # Retorna o template mostrando o erro (importante retornar DENTRO do try neste caso)
-                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename) 
-
-            # 2. Preencher o PowerPoint
-            logging.info(f"Chamando preencher_cotacao_pptx para salvar em: {output_pptx_path}")
-            sucesso_pptx = preencher_cotacao_pptx(TEMPLATE_PPTX, output_pptx_path, dados_cotacao)
-
-            if sucesso_pptx:
-                logging.info(f"PPTX preenchido com sucesso: {output_pptx_path}. Tentando converter para PDF...")
-
-                # 3. Converter para PDF
-                caminho_pdf_gerado = converter_pptx_para_pdf(output_pptx_path, app.config["OUTPUT_DIR"]) 
-
-                if caminho_pdf_gerado and os.path.exists(caminho_pdf_gerado): 
-                    output_pdf_filename = os.path.basename(caminho_pdf_gerado) 
-                    success = f"Cotação para {nome_cliente} (placa {placa}) gerada com sucesso!"
-                    pdf_filename = output_pdf_filename 
-                    logging.info(f"PDF gerado com sucesso: {caminho_pdf_gerado}. Nome relativo para link: {pdf_filename}")
-
-                    # 4. Limpar o arquivo pptx intermediário (opcional)
-                    try:
-                        os.remove(output_pptx_path)
-                        logging.info(f"Arquivo PPTX intermediário removido: {output_pptx_path}")
-                    except OSError as e:
-                        logging.warning(f"Não foi possível remover arquivo PPTX intermediário: {e}")
-                else:
-                    # Se caminho_pdf_gerado for None ou o arquivo não existir, a conversão falhou
-                    error = f"Erro ao converter a cotação para PDF. Verifique os logs do servidor."
-                    logging.error(f"Falha na conversão para PDF (função retornou '{caminho_pdf_gerado}' ou arquivo não existe) para {output_pptx_path}")
-                    # Tenta limpar PPTX mesmo se PDF falhou? É seguro pois ele foi gerado.
-                    if os.path.exists(output_pptx_path):
-                        try:
-                            os.remove(output_pptx_path)
-                            logging.info(f"Limpando PPTX intermediário após falha no PDF: {output_pptx_path}")
-                        except:
-                            pass 
-            else: 
-                # Se preencher_cotacao_pptx retornou False
-                error = f"Erro ao preencher o modelo de cotação. Verifique os logs do servidor."
-                logging.error(f"Falha reportada por preencher_cotacao_pptx para {output_pptx_path}")
-
-        # Este except corresponde ao 'try' que engloba Preencher/Converter/Limpar
         except Exception as e:
-            error = f"Ocorreu um erro inesperado durante a geração da cotação."
-            logging.exception(f"Exceção durante preenchimento/conversão:") 
-            # Tenta limpar arquivos intermediários se possível em caso de erro
-            if 'output_pptx_path' in locals() and os.path.exists(output_pptx_path):
-                 try:
-                      os.remove(output_pptx_path)
-                      logging.info(f"Limpando PPTX intermediário após erro: {output_pptx_path}")
-                 except:
-                      pass 
+            error = "Ocorreu um erro inesperado durante a geração da cotação."
+            logging.exception("Exceção em gerar_pdf_cotacao:")
 
     # Fim do 'if request.method == "POST":'
     # O return abaixo será executado para GET ou após o POST (com ou sem erro/success)
