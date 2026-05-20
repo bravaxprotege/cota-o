@@ -924,12 +924,13 @@
                 <div class="form-group">
                     <label for="valor_fipe">Valor FIPE (R$)</label>
                     <input type="number" step="0.01" id="valor_fipe" name="valor_fipe"
-                           placeholder="Preenchido automaticamente" required
+                           placeholder="Ex: 75000.00" required
                            value="{{ form_data.valor_fipe if form_data else '' }}">
                     <button type="button" class="btn-fipe" id="btn-buscar-fipe" onclick="buscarFipe()">
-                        🔍 Buscar valor FIPE
+                        🔍 Buscar valor FIPE automaticamente
                     </button>
                     <div class="fipe-status" id="fipe-status"></div>
+                    <span class="hint">Não encontrou? Digite o valor manualmente acima.</span>
                 </div>
 
                 <div class="form-group">

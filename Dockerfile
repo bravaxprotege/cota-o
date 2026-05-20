@@ -8,6 +8,8 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libpangoft2-1.0-0 \
         libharfbuzz0b \
         libcairo2 \
         fontconfig \
