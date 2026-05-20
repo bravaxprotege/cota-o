@@ -1039,11 +1039,17 @@ document.getElementById('cotacao-form').addEventListener('submit', function () {
     btn.textContent = '⏳ Gerando...';
 });
 
-// ── Auto-scroll para download ao carregar ────────────────────────────────────
+// ── Auto-scroll: download (sucesso) ou card do form (erro) ──────────────────
 window.addEventListener('load', function () {
     const box = document.getElementById('download-box');
     if (box) {
         setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
+        return;
+    }
+    const err = document.querySelector('.msg-error, .msg-warning');
+    if (err) {
+        setTimeout(() => document.getElementById('form-card')
+            .scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
     }
 });
 

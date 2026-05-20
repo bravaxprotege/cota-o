@@ -1,13 +1,9 @@
-# ----- INÍCIO DO CÓDIGO COMPLETO E CORRIGIDO PARA app.py -----
-import sys
-# Linha específica do ambiente Render/Manus, pode manter se necessário
-# sys.path.append("/opt/.manus/.sandbox-runtime") 
-
 from flask import Flask, render_template, request, send_from_directory, url_for, abort, jsonify
 import os
 import uuid
+import glob
+import time
 import logging
-import traceback
 import requests as http_requests
 
 # Importar módulos locais
@@ -50,6 +46,26 @@ if not os.path.exists(OUTPUT_DIR):
         logging.error(f"ERRO CRÍTICO ao criar diretório de saída '{OUTPUT_DIR}': {e}")
         # Se não conseguir criar o diretório de saída, a aplicação não funcionará
         raise OSError(f"Não foi possível criar o diretório de saída necessário: {e}") from e
+
+# --- Limpeza de PDFs antigos ---
+
+def limpar_pdfs_antigos(diretorio, max_arquivos=50, max_idade_horas=24):
+    """Remove PDFs mais antigos quando o número excede max_arquivos ou têm mais de max_idade_horas."""
+    arquivos = sorted(glob.glob(os.path.join(diretorio, "cotacao_*.pdf")), key=os.path.getmtime)
+    agora = time.time()
+    removidos = 0
+    for arq in arquivos:
+        idade_horas = (agora - os.path.getmtime(arq)) / 3600
+        if len(arquivos) - removidos > max_arquivos or idade_horas > max_idade_horas:
+            try:
+                os.remove(arq)
+                removidos += 1
+                logging.info(f"PDF antigo removido: {os.path.basename(arq)}")
+            except OSError:
+                pass
+    if removidos:
+        logging.info(f"Limpeza: {removidos} PDF(s) removido(s) de {diretorio}")
+
 
 # --- Helpers para busca FIPE ---
 
@@ -261,9 +277,12 @@ def index():
             warning = "Atenção: Esta cotação está sujeita à aprovação da diretoria devido ao valor do veículo."
             logging.info(f"Cotação para FIPE {valor_fipe} sujeita à aprovação.")
 
+        # Limpar PDFs antigos antes de gerar novo
+        limpar_pdfs_antigos(app.config["OUTPUT_DIR"])
+
         # Gerar nomes de arquivo únicos
         unique_id = str(uuid.uuid4())[:8]
-        safe_placa = placa.replace(' ', '_').replace('/', '_').replace('-', '') # Mais sanitização
+        safe_placa = placa.replace(' ', '_').replace('/', '_').replace('-', '')
         output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf"
         output_pdf_path    = os.path.join(app.config["OUTPUT_DIR"], output_pdf_filename)
 
@@ -335,13 +354,5 @@ def download_file(filename):
 
 
 if __name__ == "__main__":
-    # Define a porta baseado na variável de ambiente ou usa 8080 como padrão
     port = int(os.environ.get("PORT", 8080))
-    logging.info(f"Iniciando servidor de desenvolvimento Flask em host 0.0.0.0 na porta {port}")
-    # Executa o servidor de desenvolvimento do Flask
-    # debug=True é útil para desenvolvimento local, mas NUNCA em produção
-    # host='0.0.0.0' permite acesso na rede local
-    # No Render, o Gunicorn definido no Start Command é que será usado.
-    app.run(host="0.0.0.0", port=port, debug=True) # Deixei debug=True para facilitar teste local, mas lembre-se de desativar ou usar Gunicorn para produção real
-
-# ----- FIM DO CÓDIGO PARA app.py -----
+    app.run(host="0.0.0.0", port=port, debug=True)
