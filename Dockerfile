@@ -13,8 +13,6 @@ RUN apt-get update && \
         libharfbuzz0b \
         libcairo2 \
         libgdk-pixbuf2.0-0 \
-        libffi-dev \
-        shared-mime-info \
         fontconfig \
         fonts-liberation \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
