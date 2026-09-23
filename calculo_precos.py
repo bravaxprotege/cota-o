@@ -6,6 +6,17 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _limite_superior_faixa(faixa):
+    """Extrai o limite superior de uma faixa monetária da planilha."""
+    if not isinstance(faixa, str) or "-" not in faixa:
+        return None
+    try:
+        limite = faixa.split("-")[-1].replace("R$", "").replace(".", "").replace(",", ".").strip()
+        return float(limite)
+    except ValueError:
+        return None
+
+
 def calcular_precos_planos(valor_fipe, arquivo_tabela):
     """Calcula os preços dos planos com base no valor FIPE do veículo."""
     log.info(f"Iniciando cálculo para FIPE: {valor_fipe} usando Tabela: {arquivo_tabela}")
@@ -134,13 +145,20 @@ def calcular_precos_planos(valor_fipe, arquivo_tabela):
             sujeito_aprovacao = True
             log.info(f" Valor excedente: {valor_excedente}, Percentual Adicional: {percentual_adicional}%")
             
-            # Usar a última linha como base
-            if not dados_df.empty:
-                 faixa_encontrada = dados_df.iloc[-1]
-                 log.info(f" Usando última linha (Índice {faixa_encontrada.name}) como base: Faixa '{faixa_encontrada.get('faixa_valor', 'N/A')}'")
-            else:
-                 log.info(" ERRO: Tabela vazia, não é possível calcular para FIPE > 100k.")
-                 return None 
+            # Usar a maior faixa numérica válida; a planilha também contém
+            # outras seções e textos depois da tabela de automóveis.
+            faixas_validas = [
+                (_limite_superior_faixa(row.get("faixa_valor")), row)
+                for _, row in dados_df.iterrows()
+            ]
+            faixas_validas = [(limite, row) for limite, row in faixas_validas if limite is not None]
+            if not faixas_validas:
+                log.error(" ERRO: Não há faixas numéricas válidas para FIPE > 100k.")
+                return None
+            _, faixa_encontrada = max(faixas_validas, key=lambda item: item[0])
+            log.info(
+                f" Usando a maior faixa numérica como base: '{faixa_encontrada.get('faixa_valor', 'N/A')}'"
+            )
         else:
             # --- Loop Principal para Encontrar a Faixa ---
             log.info(f" Procurando faixa para FIPE: {valor_fipe}")
