@@ -2,12 +2,12 @@
 gera_pdf.py
 -----------
 Gera o PDF de cotação diretamente de um template HTML usando WeasyPrint.
-Substitui o pipeline PPTX → LibreOffice → PDF.
+Usa as imagens aprovadas do PowerPoint como fundos e posiciona o texto via HTML.
 
 Vantagens:
   - Fontes renderizadas com precisão (Arial Black via @font-face)
   - Posicionamento exato em cm (mesmos valores extraídos do PPTX)
-  - Sem conversão intermediária, sem artefatos do LibreOffice
+  - Renderização direta sem conversor intermediário
 """
 
 import os
@@ -74,6 +74,8 @@ def gerar_pdf_cotacao(dados_cotacao, output_path):
         modelo         = dados_cotacao.get('modelo', 'N/A').upper()
         ano            = str(dados_cotacao.get('ano', 'N/A'))
         valor_fipe     = dados_cotacao.get('valor_fipe')
+        codigo_fipe    = dados_cotacao.get('codigo_fipe', '')
+        referencia_fipe = dados_cotacao.get('referencia_fipe', '')
         categoria      = dados_cotacao.get('categoria', 'PASSEIO') or 'PASSEIO'
         veiculo_pesado = dados_cotacao.get('veiculo_pesado', False)
         precos         = dados_cotacao.get('precos', {})
@@ -94,7 +96,7 @@ def gerar_pdf_cotacao(dados_cotacao, output_path):
         # ── Renderiza o template Jinja2 ───────────────────────────────────
         env = Environment(
             loader=FileSystemLoader(os.path.join(BASE_DIR, 'templates')),
-            autoescape=False,
+            autoescape=True,
         )
         template = env.get_template('cotacao_pdf.html')
 
@@ -106,6 +108,8 @@ def gerar_pdf_cotacao(dados_cotacao, output_path):
             ano            = ano,
             categoria      = categoria.upper(),
             valor_fipe_fmt = valor_fipe_fmt,
+            codigo_fipe    = codigo_fipe,
+            referencia_fipe = referencia_fipe,
             veiculo_pesado = veiculo_pesado,
             adesao         = adesao,
             preco_ouro     = preco_ouro,

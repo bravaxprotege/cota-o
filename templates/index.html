@@ -44,7 +44,7 @@
            HEADER
         ───────────────────────────────────────── */
         header {
-            background: var(--black);
+            background: var(--white);
             padding: 0 2rem;
             height: 64px;
             display: flex;
@@ -75,15 +75,15 @@
             font-family: var(--font-display);
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--white);
+            color: var(--black);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
         .header-badge {
             font-family: var(--font-body);
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: rgba(255,255,255,0.7);
+            border: 1px solid var(--gray-200);
+            color: var(--gray-800);
             font-size: 0.72rem;
             font-weight: 500;
             padding: 0.3rem 0.9rem;
@@ -705,11 +705,16 @@
         ───────────────────────────────────────── */
         @media (max-width: 480px) {
             header { padding: 0 1rem; }
-            .hero  { padding: 3.5rem 1.25rem 3rem; }
+            .hero  { padding: 2.5rem 1.25rem 1.75rem; }
+            .hero h1 { font-size: clamp(2rem, 9vw, 2.8rem); }
+            .hero-stats { margin-top: 1.75rem; }
             .hero-stats { gap: 0; }
             .stat { padding: 0 1.25rem; }
             .main-wrapper { padding: 2rem 1rem 3rem; }
             .form-body { padding: 1.25rem; }
+        }
+        @media (max-width: 919px) {
+            .form-card { order: -1; }
         }
     </style>
 </head>
@@ -742,9 +747,9 @@
             Proteção veicular personalizada
         </div>
 
-        <h1>Sua cotação em <em>segundos</em>,<br>sua proteção para sempre</h1>
+        <h1>Consulte o veículo.<br><em>Apresente a cotação.</em></h1>
 
-        <p>Preencha os dados do veículo e gere na hora uma cotação completa em PDF, pronta para apresentar ao cliente.</p>
+        <p>Confira a versão e o valor FIPE, aplique as regras vigentes e gere um PDF para apresentar ao cliente.</p>
 
         <div class="hero-stats">
             <div class="stat">
@@ -756,8 +761,8 @@
                 <span class="stat-label">Assistência</span>
             </div>
             <div class="stat">
-                <span class="stat-number">100%</span>
-                <span class="stat-label">Sem burocracia</span>
+                <span class="stat-number">PDF</span>
+                <span class="stat-label">Pronto para enviar</span>
             </div>
         </div>
     </div>
@@ -777,29 +782,29 @@
             <div class="step-item">
                 <div class="step-num">1</div>
                 <div class="step-text">
-                    <strong>Digite a placa do veículo</strong>
-                    <span>Clique em "Consultar placa" para abrir a busca automática</span>
+                    <strong>Informe os dados do veículo</strong>
+                    <span>Use a placa como apoio ou preencha marca, modelo e ano</span>
                 </div>
             </div>
             <div class="step-item">
                 <div class="step-num">2</div>
                 <div class="step-text">
-                    <strong>Preencha marca, modelo e ano</strong>
-                    <span>Copie as informações encontradas na consulta</span>
+                    <strong>Confirme a versão FIPE</strong>
+                    <span>Escolha o combustível quando houver mais de uma opção</span>
                 </div>
             </div>
             <div class="step-item">
                 <div class="step-num">3</div>
                 <div class="step-text">
-                    <strong>FIPE preenchido automaticamente</strong>
-                    <span>Ao terminar de preencher o ano, o sistema busca sozinho</span>
+                    <strong>Confira o valor e a referência</strong>
+                    <span>O mês e o código FIPE ficam registrados na cotação</span>
                 </div>
             </div>
             <div class="step-item">
                 <div class="step-num">4</div>
                 <div class="step-text">
-                    <strong>Baixe a cotação em PDF</strong>
-                    <span>Documento pronto para enviar ao cliente</span>
+                    <strong>Gere o documento</strong>
+                    <span>Baixe o PDF e apresente os planos ao cliente</span>
                 </div>
             </div>
         </div>
@@ -845,7 +850,7 @@
 
         <div class="form-header">
             <h2>Gerar Cotação</h2>
-            <p>Preencha os dados e receba o PDF na hora</p>
+            <p>Informe o veículo para consultar a FIPE e gerar o PDF.</p>
         </div>
 
         <div class="form-body">
@@ -878,7 +883,7 @@
                             🔎 Consultar
                         </button>
                     </div>
-                    <span class="hint">Clique em "Consultar" e copie marca, modelo e ano abaixo</span>
+                    <span class="hint">A consulta abre um serviço externo e envia a placa no endereço.</span>
                 </div>
 
                 <div class="divider">dados do veículo</div>
@@ -894,6 +899,15 @@
                           style="display:{{ 'block' if form_data and form_data.veiculo_pesado else 'none' }}; color:#92400e;">
                         Cotação gerada apenas com o Plano Diamante Pesado.
                     </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="fipe_tipo">Tipo de veículo na FIPE</label>
+                    <select id="fipe_tipo" name="fipe_tipo" onchange="tipoFipeAlterado()">
+                        <option value="carros">Carro ou utilitário</option>
+                        <option value="motos">Motocicleta</option>
+                        <option value="caminhoes">Caminhão</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -920,11 +934,19 @@
                            oninput="agendarBuscaFipe()" onblur="buscarFipeSeCompleto()">
                 </div>
 
+                <div class="form-group" id="versao-fipe-wrap" hidden>
+                    <label for="versao-fipe">Versão e combustível</label>
+                    <select id="versao-fipe" onchange="selecionarVersaoFipe()">
+                        <option value="">Escolha a versão...</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="valor_fipe">Valor FIPE (R$)</label>
                     <input type="number" step="0.01" id="valor_fipe" name="valor_fipe"
                            placeholder="Ex: 75000.00" required
-                           value="{{ form_data.valor_fipe if form_data else '' }}">
+                           value="{{ form_data.valor_fipe if form_data else '' }}"
+                           oninput="valorFipeManual()">
                     <button type="button" class="btn-fipe" id="btn-buscar-fipe" onclick="buscarFipe()">
                         🔍 Buscar valor FIPE automaticamente
                     </button>
@@ -944,17 +966,22 @@
                     </select>
                 </div>
 
+                <!-- Códigos da versão consultada; preço é validado novamente no servidor -->
+                <input type="hidden" id="fipe_marca_codigo" name="fipe_marca_codigo" value="">
+                <input type="hidden" id="fipe_modelo_codigo" name="fipe_modelo_codigo" value="">
+                <input type="hidden" id="fipe_ano_codigo" name="fipe_ano_codigo" value="">
+                <input type="hidden" id="fipe_referencia_codigo" name="fipe_referencia_codigo" value="">
                 <!-- Campos ocultos do desconto -->
                 <input type="hidden" id="desconto_tipo"  name="desconto_tipo"  value="">
                 <input type="hidden" id="desconto_valor" name="desconto_valor" value="0">
-                <input type="hidden" id="desconto_pin"   name="desconto_pin"   value="">
 
                 <button type="submit" class="btn-submit" id="btn-submit">
                     Gerar Cotação em PDF
                 </button>
             </form>
 
-            <!-- Ajuste de valor (PIN protegido) -->
+            <!-- Ajuste de valor validado no servidor -->
+            {% if config.get('COTACAO_AJUSTE_PIN') %}
             <button class="desconto-toggle-btn" id="btn-desconto-toggle" onclick="toggleDesconto()">
                 <span class="arrow">▾</span> ajuste de valor
             </button>
@@ -962,7 +989,7 @@
             <div class="desconto-section" id="desconto-section">
                 <div class="desconto-pin-block">
                     <label for="input-pin">🔐 PIN de acesso</label>
-                    <input type="password" id="input-pin" maxlength="4" placeholder="••••"
+                    <input type="password" id="input-pin" name="desconto_pin" maxlength="64" placeholder="Senha de ajustes" autocomplete="off"
                            oninput="validarPin(this)">
                     <span class="hint" id="pin-msg"></span>
                 </div>
@@ -980,6 +1007,9 @@
                     <span class="hint" id="desconto-preview" style="margin-top:0.5rem;"></span>
                 </div>
             </div>
+            {% else %}
+            <p class="hint">Ajustes de preço estão desativados nesta instância.</p>
+            {% endif %}
 
             <div class="loading-bar" id="loading">
                 ⏳ Gerando sua cotação, aguarde...
@@ -1027,9 +1057,9 @@
 </footer>
 
 <script>
-const PIN_CORRETO = "2019";
 let tipoSelecionado = "";
 let fipeTimer = null;
+let fipeChoiceType = "";
 
 // ── Spinner ao submeter ──────────────────────────────────────────────────────
 document.getElementById('cotacao-form').addEventListener('submit', function () {
@@ -1057,7 +1087,7 @@ window.addEventListener('load', function () {
 function abrirPlacaFipe() {
     const placa = document.getElementById('placa').value.trim().toUpperCase();
     if (!placa) { alert('Digite a placa primeiro.'); return; }
-    window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank');
+    window.open('https://placafipe.com.br/?placa=' + encodeURIComponent(placa), '_blank', 'noopener,noreferrer');
 }
 
 // ── Toggle pesado ─────────────────────────────────────────────────────────────
@@ -1066,9 +1096,35 @@ function togglePesado(cb) {
 }
 
 // ── Busca FIPE automática ─────────────────────────────────────────────────────
+function tipoFipeAlterado() {
+    limparSelecaoFipe();
+    const categoria = document.getElementById('categoria');
+    const tipo = document.getElementById('fipe_tipo').value;
+    if (tipo === 'motos') categoria.value = 'MOTO';
+    else if (categoria.value === 'MOTO') categoria.value = 'PASSEIO';
+}
+
+function limparSelecaoFipe() {
+    fipeChoiceType = "";
+    ['fipe_marca_codigo', 'fipe_modelo_codigo', 'fipe_ano_codigo', 'fipe_referencia_codigo']
+        .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('versao-fipe').innerHTML = '<option value="">Escolha a versão...</option>';
+    document.getElementById('versao-fipe-wrap').hidden = true;
+}
+
+function valorFipeManual() {
+    if (document.getElementById('fipe_marca_codigo').value) {
+        limparSelecaoFipe();
+        const status = document.getElementById('fipe-status');
+        status.textContent = 'Valor FIPE editado manualmente; confira antes de gerar.';
+        status.className = 'fipe-status fipe-err';
+    }
+}
+
 function agendarBuscaFipe() {
+    limparSelecaoFipe();
     clearTimeout(fipeTimer);
-    fipeTimer = setTimeout(buscarFipeSeCompleto, 1500);
+    fipeTimer = setTimeout(buscarFipeSeCompleto, 700);
 }
 
 function buscarFipeSeCompleto() {
@@ -1085,6 +1141,7 @@ async function buscarFipe() {
     const ano    = document.getElementById('ano').value.trim();
     const status = document.getElementById('fipe-status');
     const btn    = document.getElementById('btn-buscar-fipe');
+    const escolhaCodigo = document.getElementById('versao-fipe').value;
 
     if (!marca || !modelo || !ano) {
         status.textContent = '⚠️ Preencha marca, modelo e ano antes de buscar.';
@@ -1096,17 +1153,39 @@ async function buscarFipe() {
     status.className = 'fipe-status fipe-loading';
 
     try {
-        const params = new URLSearchParams({ marca, modelo, ano });
+        const params = new URLSearchParams({ marca, modelo, ano, tipo: document.getElementById('fipe_tipo').value });
+        if (escolhaCodigo && fipeChoiceType) params.set(fipeChoiceType, escolhaCodigo);
         const resp = await fetch('/api/buscar-fipe?' + params);
         const data = await resp.json();
+        const opcoes = data.modelos || data.versoes;
+        if (resp.status === 409 && Array.isArray(opcoes)) {
+            fipeChoiceType = data.modelos ? 'modelo_codigo' : 'ano_codigo';
+            const select = document.getElementById('versao-fipe');
+            select.innerHTML = '<option value="">Escolha a versão...</option>';
+            opcoes.forEach(versao => {
+                const option = document.createElement('option');
+                option.value = versao.codigo;
+                option.textContent = versao.nome;
+                select.appendChild(option);
+            });
+            document.getElementById('versao-fipe-wrap').hidden = false;
+            status.textContent = data.erro;
+            status.className = 'fipe-status fipe-loading';
+            return;
+        }
         if (!resp.ok || data.erro) {
             status.textContent = '❌ ' + (data.erro || 'Valor FIPE não encontrado.');
             status.className = 'fipe-status fipe-err';
         } else {
+            limparSelecaoFipe();
             document.getElementById('valor_fipe').value = data.valor_fipe;
             if (data.marca)  document.getElementById('marca').value  = data.marca;
             if (data.modelo) document.getElementById('modelo').value = data.modelo;
-            status.textContent = `✅ FIPE: ${data.valor_fipe_formatado} — cód. ${data.codigo_fipe}`;
+            document.getElementById('fipe_marca_codigo').value = data.marca_codigo;
+            document.getElementById('fipe_modelo_codigo').value = data.modelo_codigo;
+            document.getElementById('fipe_ano_codigo').value = data.ano_codigo;
+            document.getElementById('fipe_referencia_codigo').value = data.referencia_codigo;
+            status.textContent = `FIPE ${data.valor_fipe_formatado} · ${data.referencia} · código ${data.codigo_fipe}`;
             status.className = 'fipe-status fipe-ok';
         }
     } catch {
@@ -1115,6 +1194,10 @@ async function buscarFipe() {
     } finally {
         btn.disabled = false;
     }
+}
+
+function selecionarVersaoFipe() {
+    if (document.getElementById('versao-fipe').value) buscarFipe();
 }
 
 // ── Desconto ──────────────────────────────────────────────────────────────────
@@ -1130,16 +1213,10 @@ function validarPin(input) {
     const campos = document.getElementById('desconto-fields');
     const msg    = document.getElementById('pin-msg');
     if (input.value.length < 4) { campos.classList.remove('visible'); msg.textContent = ''; return; }
-    if (input.value === PIN_CORRETO) {
+    if (input.value.length >= 4) {
         campos.classList.add('visible');
-        msg.textContent = '✅ PIN correto';
-        msg.style.color = '#15803d';
-        document.getElementById('desconto_pin').value = PIN_CORRETO;
-    } else {
-        campos.classList.remove('visible');
-        msg.textContent = '❌ PIN incorreto';
-        msg.style.color = '#dc2626';
-        document.getElementById('desconto_pin').value = '';
+        msg.textContent = 'O PIN será validado ao gerar a cotação.';
+        msg.style.color = '#555';
     }
 }
 
@@ -1164,7 +1241,9 @@ function atualizarPreview() {
     if (!tipoSelecionado || pct <= 0) { prev.textContent = ''; return; }
     const sinal = tipoSelecionado === 'desconto' ? '−' : '+';
     const cor   = tipoSelecionado === 'desconto' ? '#15803d' : '#dc2626';
-    prev.innerHTML = `<span style="color:${cor}; font-weight:700;">${sinal}${pct}% aplicado nas mensalidades dos 3 planos.</span>`;
+    prev.textContent = `${sinal}${pct}% aplicado nas mensalidades dos 3 planos.`;
+    prev.style.color = cor;
+    prev.style.fontWeight = '700';
 }
 
 function resetDesconto() {
@@ -1174,7 +1253,6 @@ function resetDesconto() {
     document.getElementById('desconto-fields').classList.remove('visible');
     document.getElementById('desconto_tipo').value  = '';
     document.getElementById('desconto_valor').value = '0';
-    document.getElementById('desconto_pin').value   = '';
     document.getElementById('pin-msg').textContent  = '';
     document.getElementById('desconto-preview').textContent = '';
     document.getElementById('btn-desc').className = 'tipo-btn';

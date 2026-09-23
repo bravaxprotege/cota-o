@@ -137,6 +137,11 @@ body {
     <div class="f f-dados" style="left:5.842cm; top:15.412cm; width:7.144cm; height:1.399cm;">
         {{ valor_fipe_fmt }}
     </div>
+    {% if codigo_fipe %}
+    <div class="f" style="left:5.842cm; top:16.85cm; width:7.144cm; height:0.45cm; font: 8pt Arial, sans-serif; color:#555;">
+        FIPE {{ codigo_fipe }} · referência {{ referencia_fipe }}
+    </div>
+    {% endif %}
 </div>
 
 {% if not veiculo_pesado %}

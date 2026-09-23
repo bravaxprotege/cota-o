@@ -4,10 +4,10 @@ Este guia explica, de forma simples, como usar o arquivo `Dockerfile` que criei 
 
 **O que é Docker e o Dockerfile?**
 
-*   **Dockerfile:** É como uma receita de bolo. Ele diz exatamente como montar um pacote (chamado "imagem") que contém TUDO que sua aplicação precisa: o sistema operacional base, o Python, o LibreOffice (para os PDFs!), as bibliotecas e o código da sua aplicação.
+*   **Dockerfile:** É como uma receita de bolo. Ele monta a imagem com o Python, WeasyPrint e as bibliotecas nativas usadas para gerar PDF, além do código da aplicação.
 *   **Docker:** É a ferramenta que lê essa receita (`Dockerfile`) e monta o pacote ("imagem"). As plataformas de hospedagem usam o Docker para rodar sua aplicação de forma isolada e consistente.
 
-**Vantagem:** Usando o `Dockerfile`, você não precisa se preocupar em instalar Python ou LibreOffice no servidor de hospedagem. A "receita" já cuida disso!
+**Vantagem:** Usando o `Dockerfile`, você não precisa instalar Python nem as dependências nativas de PDF no servidor de hospedagem. A "receita" já cuida disso!
 
 **Pré-requisito:**
 
@@ -36,14 +36,14 @@ Este guia explica, de forma simples, como usar o arquivo `Dockerfile` que criei 
     *   A plataforma geralmente detectará automaticamente o `Dockerfile` na raiz do seu repositório.
     *   Configure um nome para sua aplicação (ex: `bravax-cotador`).
     *   Verifique se a porta está correta. O `Dockerfile` está configurado para usar a porta `8080`. A plataforma pode detectar isso ou você pode precisar confirmar.
-    *   **Importante:** Verifique se há configurações de **plano** ou **recursos**. Como a aplicação usa LibreOffice, ela pode precisar de um pouco mais de memória RAM do que o plano gratuito mais básico oferece em algumas plataformas. Talvez seja necessário escolher um plano pago de baixo custo ou um plano gratuito com mais recursos, se disponível. (Ex: No Render, o plano gratuito pode ser suficiente, mas fique atento).
+    *   **Importante:** Confira o plano e os recursos da hospedagem. A geração de PDF usa WeasyPrint e pode precisar de memória adicional em cotações grandes.
+    *   **Segredos opcionais:** Configure `FIPE_API_TOKEN` no ambiente do serviço para o limite ampliado da API FIPE. Configure `COTACAO_AJUSTE_PIN` somente se a equipe deve usar ajustes de preço. Não grave esses valores no código ou no Git. Sem `COTACAO_AJUSTE_PIN`, os ajustes permanecem desativados.
 
 4.  **Inicie o Deploy:**
     *   Clique no botão para criar ou implantar o serviço.
     *   A plataforma agora vai seguir a "receita" do `Dockerfile`:
         *   Baixar a imagem base do Python.
-        *   Instalar o LibreOffice (pode demorar um pouco).
-        *   Instalar as bibliotecas Python.
+        *   Instalar as bibliotecas Python e as dependências nativas do WeasyPrint.
         *   Copiar seu código.
         *   Construir a imagem final da sua aplicação.
     *   Após construir a imagem, a plataforma vai iniciar sua aplicação usando o comando definido no `Dockerfile` (com Gunicorn).
@@ -55,8 +55,8 @@ Este guia explica, de forma simples, como usar o arquivo `Dockerfile` que criei 
 
 **Observações:**
 
-*   **Primeiro Deploy:** O primeiro deploy pode demorar alguns minutos, pois a plataforma precisa baixar o LibreOffice e construir toda a imagem.
+*   **Primeiro Deploy:** O primeiro deploy pode demorar alguns minutos para instalar as dependências e construir a imagem.
 *   **Atualizações:** Se você precisar atualizar a aplicação (ex: mudar a tabela de preços), basta atualizar os arquivos no seu repositório GitHub e a plataforma (geralmente) fará o deploy da nova versão automaticamente.
 *   **Suporte da Plataforma:** Se encontrar problemas específicos durante o deploy, consulte a documentação da plataforma de hospedagem escolhida (Render, Railway, etc.).
 
-Com este `Dockerfile`, o processo de colocar sua aplicação online se torna muito mais gerenciável, pois a parte mais complexa (instalar o LibreOffice) está automatizada dentro da "receita". Boa sorte!
+Com este `Dockerfile`, o processo de colocar sua aplicação online se torna mais gerenciável, pois as dependências usadas pela aplicação estão automatizadas na "receita". Boa sorte!

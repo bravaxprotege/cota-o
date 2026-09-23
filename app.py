@@ -3,6 +3,7 @@ import os
 import uuid
 import glob
 import time
+import threading
 import logging
 import requests as http_requests
 
@@ -14,6 +15,7 @@ except ImportError as import_err:
     logging.exception(f"ERRO CRÍTICO: Falha ao importar módulos locais: {import_err}")
 
 app = Flask(__name__)
+app.config["COTACAO_AJUSTE_PIN"] = os.environ.get("COTACAO_AJUSTE_PIN", "").strip()
 
 # Configurar logging para um nível útil (INFO ou DEBUG para mais detalhes)
 # A formatação ajuda a identificar a origem das mensagens
@@ -69,7 +71,109 @@ def limpar_pdfs_antigos(diretorio, max_arquivos=50, max_idade_horas=24):
 
 # --- Helpers para busca FIPE ---
 
-FIPE_BASE = "https://parallelum.com.br/fipe/api/v1/carros"
+FIPE_BASE = "https://fipe.parallelum.com.br/api/v2"
+FIPE_VEHICLE_TYPES = {"carros": "cars", "motos": "motorcycles", "caminhoes": "trucks"}
+FIPE_CACHE_TTL = 6 * 60 * 60
+_fipe_cache = {}
+_fipe_cache_lock = threading.Lock()
+_fipe_thread_local = threading.local()
+
+
+class FipeApiError(Exception):
+    """Erro controlado ao consultar a API FIPE."""
+
+    def __init__(self, message, status_code=502):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def _fipe_session():
+    session = getattr(_fipe_thread_local, "session", None)
+    if session is None:
+        session = http_requests.Session()
+        session.headers.update({"Accept": "application/json", "User-Agent": "BravaxCotacao/2.0"})
+        token = os.environ.get("FIPE_API_TOKEN", "").strip()
+        if token:
+            session.headers["X-Subscription-Token"] = token
+        _fipe_thread_local.session = session
+    return session
+
+
+def _fipe_get(path, params=None):
+    """Faz GET reutilizando conexão e resposta em cache curto por caminho/referência."""
+    params = dict(params or {})
+    cache_key = (path, tuple(sorted(params.items())))
+    now = time.monotonic()
+    with _fipe_cache_lock:
+        cached = _fipe_cache.get(cache_key)
+        if cached and cached[0] > now:
+            return cached[1]
+        if cached:
+            _fipe_cache.pop(cache_key, None)
+
+    try:
+        response = _fipe_session().get(f"{FIPE_BASE}{path}", params=params, timeout=(3, 8))
+    except http_requests.Timeout as exc:
+        raise FipeApiError("A consulta FIPE demorou demais. Tente novamente.", 504) from exc
+    except http_requests.RequestException as exc:
+        raise FipeApiError("Não foi possível conectar à tabela FIPE. Tente novamente.", 502) from exc
+
+    if response.status_code == 429:
+        raise FipeApiError("A consulta FIPE atingiu o limite temporário. Tente novamente mais tarde.", 429)
+    if response.status_code >= 500:
+        raise FipeApiError("A tabela FIPE está temporariamente indisponível.", 502)
+    if response.status_code >= 400:
+        raise FipeApiError("Não encontramos essa combinação na tabela FIPE.", 404)
+    try:
+        data = response.json()
+    except ValueError as exc:
+        raise FipeApiError("A tabela FIPE retornou uma resposta inválida.", 502) from exc
+
+    with _fipe_cache_lock:
+        _fipe_cache[cache_key] = (now + FIPE_CACHE_TTL, data)
+    return data
+
+
+def _fipe_reference():
+    references = _fipe_get("/references")
+    if not references:
+        raise FipeApiError("Não foi possível identificar a referência FIPE atual.", 502)
+    return references[0]
+
+
+def _fipe_price(vehicle_type, brand_id, model_id, year_id, reference):
+    detail = _fipe_get(
+        f"/{vehicle_type}/brands/{brand_id}/models/{model_id}/years/{year_id}",
+        {"reference": reference["code"]},
+    )
+    price = detail.get("price", "")
+    try:
+        price_number = float(price.replace("R$", "").replace(".", "").replace(",", ".").strip())
+    except (AttributeError, ValueError):
+        raise FipeApiError("A API FIPE retornou um valor que não conseguimos interpretar.", 502)
+    return {
+        "marca": detail.get("brand"),
+        "modelo": detail.get("model"),
+        "ano": detail.get("modelYear"),
+        "combustivel": detail.get("fuel"),
+        "valor_fipe_formatado": price,
+        "valor_fipe": price_number,
+        "codigo_fipe": detail.get("codeFipe"),
+        "referencia": detail.get("referenceMonth") or reference.get("month"),
+        "referencia_codigo": reference["code"],
+        "marca_codigo": str(brand_id),
+        "modelo_codigo": str(model_id),
+        "ano_codigo": str(year_id),
+    }
+
+
+def _parse_currency(value):
+    """Aceita valor numérico HTML (75000.50) ou formato brasileiro (75.000,50)."""
+    normalized = str(value or "").replace("R$", "").replace(" ", "").strip()
+    if "," in normalized:
+        normalized = normalized.replace(".", "").replace(",", ".")
+    return float(normalized)
+
 
 def _melhor_match(query, items, campo):
     """Retorna o item da lista cujo campo melhor corresponde ao query."""
@@ -91,17 +195,22 @@ def _melhor_match(query, items, campo):
     return None
 
 
-def _melhor_ano(ano_str, anos):
-    """Retorna o item de ano que melhor corresponde ao ano fornecido."""
-    for item in anos:
-        if str(ano_str) in str(item.get("nome", "")):
-            return item
-    return None
+def _coincidencias(query, items, campo):
+    """Retorna todos os resultados do melhor nível de correspondência."""
+    q = query.upper().strip()
+    exactos = [item for item in items if str(item.get(campo, "")).upper() == q]
+    if exactos:
+        return exactos
+    contidos = [item for item in items if q in str(item.get(campo, "")).upper()]
+    if contidos:
+        return contidos
+    palavras = q.split()
+    return [item for item in items if all(p in str(item.get(campo, "")).upper() for p in palavras)]
 
 
 @app.route("/api/buscar-fipe")
 def api_buscar_fipe():
-    """Busca o valor FIPE via API pública (parallelum) dado marca, modelo e ano."""
+    """Busca preço FIPE atual pela API v2 com cache e referência explícita."""
     marca = request.args.get("marca", "").strip()
     modelo = request.args.get("modelo", "").strip()
     ano = request.args.get("ano", "").strip()
@@ -109,61 +218,60 @@ def api_buscar_fipe():
     if not all([marca, modelo, ano]):
         return jsonify({"erro": "Marca, modelo e ano são obrigatórios"}), 400
 
+    tipo = request.args.get("tipo", "carros")
+    vehicle_type = FIPE_VEHICLE_TYPES.get(tipo)
+    if not vehicle_type:
+        return jsonify({"erro": "Tipo de veículo inválido"}), 400
+
     try:
-        # 1. Busca marcas
-        r = http_requests.get(f"{FIPE_BASE}/marcas", timeout=10)
-        r.raise_for_status()
-        marca_match = _melhor_match(marca, r.json(), "nome")
+        reference = _fipe_reference()
+        params = {"reference": reference["code"]}
+        # A hierarquia é armazenada por referência; apenas preço/combustível pode variar por versão.
+        brands = _fipe_get(f"/{vehicle_type}/brands", params)
+        marca_match = _melhor_match(marca, brands, "name")
         if not marca_match:
             return jsonify({"erro": f"Marca '{marca}' não encontrada na tabela FIPE"}), 404
 
-        # 2. Busca modelos da marca
-        r = http_requests.get(f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos", timeout=10)
-        r.raise_for_status()
-        modelos = r.json().get("modelos", [])
-        modelo_match = _melhor_match(modelo, modelos, "nome")
+        models = _fipe_get(f"/{vehicle_type}/brands/{marca_match['code']}/models", params)
+        modelo_codigo = request.args.get("modelo_codigo", "").strip()
+        modelo_match = next((item for item in models if item.get("code") == modelo_codigo), None) if modelo_codigo else None
+        if modelo_codigo and not modelo_match:
+            return jsonify({"erro": "O modelo selecionado não está disponível. Consulte novamente."}), 404
+        if not modelo_codigo:
+            modelos = _coincidencias(modelo, models, "name")
+            if len(modelos) > 1:
+                return jsonify({
+                    "erro": "Há mais de uma versão de modelo correspondente. Escolha o modelo correto.",
+                    "modelos": [{"codigo": item["code"], "nome": item["name"]} for item in modelos],
+                }), 409
+            modelo_match = modelos[0] if modelos else None
         if not modelo_match:
-            return jsonify({"erro": f"Modelo '{modelo}' não encontrado para a marca '{marca_match['nome']}'"}), 404
+            return jsonify({"erro": f"Modelo '{modelo}' não encontrado para a marca '{marca_match['name']}'"}), 404
 
-        # 3. Busca anos do modelo
-        r = http_requests.get(
-            f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos/{modelo_match['codigo']}/anos",
-            timeout=10
+        years = _fipe_get(
+            f"/{vehicle_type}/brands/{marca_match['code']}/models/{modelo_match['code']}/years",
+            params,
         )
-        r.raise_for_status()
-        anos = r.json()
-        ano_match = _melhor_ano(ano, anos)
+        codigo_ano = request.args.get("ano_codigo", "").strip()
+        ano_match = next((item for item in years if item.get("code") == codigo_ano), None) if codigo_ano else None
+        if codigo_ano and not ano_match:
+            return jsonify({"erro": "A versão selecionada não está disponível na referência FIPE atual. Consulte novamente."}), 404
+        if not codigo_ano:
+            anos = [item for item in years if str(ano) in str(item.get("name", ""))]
+            if len(anos) > 1:
+                return jsonify({
+                    "erro": "Há mais de uma versão/combustível para esse ano. Escolha a versão FIPE.",
+                    "versoes": [{"codigo": item["code"], "nome": item["name"]} for item in anos],
+                }), 409
+            ano_match = anos[0] if anos else None
         if not ano_match:
-            return jsonify({"erro": f"Ano '{ano}' não encontrado para o modelo '{modelo_match['nome']}'"}), 404
+            return jsonify({"erro": f"Ano '{ano}' não encontrado para o modelo '{modelo_match['name']}'"}), 404
 
-        # 4. Busca valor FIPE
-        r = http_requests.get(
-            f"{FIPE_BASE}/marcas/{marca_match['codigo']}/modelos/{modelo_match['codigo']}/anos/{ano_match['codigo']}",
-            timeout=10
-        )
-        r.raise_for_status()
-        dados = r.json()
+        return jsonify(_fipe_price(vehicle_type, marca_match["code"], modelo_match["code"], ano_match["code"], reference))
 
-        # Converte "R$ 74.442,00" para float 74442.0
-        valor_str = dados.get("Valor", "")
-        valor_num = None
-        try:
-            valor_num = float(valor_str.replace("R$", "").replace(".", "").replace(",", ".").strip())
-        except Exception:
-            pass
-
-        return jsonify({
-            "marca": dados.get("Marca"),
-            "modelo": dados.get("Modelo"),
-            "ano": dados.get("AnoModelo"),
-            "valor_fipe_formatado": valor_str,
-            "valor_fipe": valor_num,
-            "codigo_fipe": dados.get("CodigoFipe"),
-        })
-
-    except http_requests.Timeout:
-        return jsonify({"erro": "Timeout ao consultar a tabela FIPE. Tente novamente."}), 504
-    except Exception as e:
+    except FipeApiError as e:
+        return jsonify({"erro": str(e)}), e.status_code
+    except Exception:
         logging.exception("Erro em api_buscar_fipe:")
         return jsonify({"erro": "Erro interno ao consultar FIPE"}), 500
 
@@ -177,6 +285,7 @@ def index():
     success = None
     pdf_filename = None # Apenas o NOME do arquivo PDF para gerar o link
     warning = None 
+    fipe_dados = None
 
     if request.method == "POST":
         logging.info("Recebida requisição POST para /")
@@ -187,6 +296,11 @@ def index():
         modelo = request.form.get("modelo")
         ano = request.form.get("ano")
         valor_fipe_str = request.form.get("valor_fipe")
+        fipe_tipo = request.form.get("fipe_tipo", "carros")
+        fipe_marca_codigo = request.form.get("fipe_marca_codigo", "").strip()
+        fipe_modelo_codigo = request.form.get("fipe_modelo_codigo", "").strip()
+        fipe_ano_codigo = request.form.get("fipe_ano_codigo", "").strip()
+        fipe_referencia_codigo = request.form.get("fipe_referencia_codigo", "").strip()
         categoria = request.form.get("categoria", "")
         veiculo_pesado = request.form.get("veiculo_pesado") == "on"
 
@@ -199,24 +313,50 @@ def index():
         except ValueError:
             desconto_valor = 0.0
 
-        logging.info(f"Dados recebidos: Nome='{nome_cliente}', Placa='{placa}', FIPE='{valor_fipe_str}', Pesado={veiculo_pesado}")
+        logging.info("Recebida cotação; dados pessoais e placa omitidos do log.")
 
         # Validar dados obrigatórios
         if not all([nome_cliente, placa, marca, modelo, ano, valor_fipe_str]):
             error = "Por favor, preencha todos os campos obrigatórios."
-            logging.warning(f"Tentativa de submissão com campos obrigatórios faltando. Dados: {request.form}")
+            logging.warning("Tentativa de cotação com campos obrigatórios faltando.")
             # Retorna imediatamente se faltar dados
             return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+
+        # Quando a busca FIPE foi confirmada na tela, refazemos a consulta no servidor.
+        # Assim o valor submetido pelo navegador não substitui o preço retornado pela API.
+        if all([fipe_marca_codigo, fipe_modelo_codigo, fipe_ano_codigo, fipe_referencia_codigo]):
+            vehicle_type = FIPE_VEHICLE_TYPES.get(fipe_tipo)
+            if not vehicle_type:
+                error = "Tipo de veículo FIPE inválido. Faça a consulta novamente."
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+            try:
+                reference = _fipe_reference()
+                if str(reference.get("code")) != fipe_referencia_codigo:
+                    raise FipeApiError("A referência FIPE mudou. Faça a consulta novamente.", 409)
+                fipe_dados = _fipe_price(vehicle_type, fipe_marca_codigo, fipe_modelo_codigo, fipe_ano_codigo, reference)
+                marca = fipe_dados["marca"] or marca
+                modelo = fipe_dados["modelo"] or modelo
+                ano = fipe_dados["ano"] or ano
+                valor_fipe_str = str(fipe_dados["valor_fipe"])
+            except FipeApiError as e:
+                error = str(e)
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
 
         # Converter valores numéricos
         try:
             ano_int = int(ano)
-            # Tratar formato brasileiro (remove '.' de milhar, troca ',' decimal por '.')
-            valor_fipe_str_limpo = valor_fipe_str.replace('.', '').replace(',', '.')
-            valor_fipe = float(valor_fipe_str_limpo) 
+            valor_fipe = fipe_dados["valor_fipe"] if fipe_dados else _parse_currency(valor_fipe_str)
         except ValueError:
             error = "Ano e Valor FIPE devem ser valores numéricos válidos (ex: 2023, 75000.50 ou 75.000,50)."
             logging.warning(f"Erro ao converter Ano ('{ano}') ou Valor FIPE ('{valor_fipe_str}').")
+            return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+
+        if valor_fipe <= 0:
+            error = "Informe um valor FIPE maior que zero."
+            return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+
+        if categoria not in {"PASSEIO", "SUV", "PICKUP", "UTILITÁRIO", "VAN", "MOTO"}:
+            error = "Selecione uma categoria válida para o veículo."
             return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
 
         # Calcular preços dos planos
@@ -250,8 +390,18 @@ def index():
         logging.info(f"Preços calculados com sucesso: {precos_info}")
 
         # Aplicar desconto ou acréscimo (somente com PIN correto e valor válido)
-        PIN_VALIDO = "2019"
-        if desconto_pin == PIN_VALIDO and desconto_tipo in ("desconto", "acrescimo") and desconto_valor > 0:
+        ajuste_solicitado = bool(desconto_tipo or desconto_valor > 0)
+        if ajuste_solicitado:
+            pin_configurado = app.config["COTACAO_AJUSTE_PIN"]
+            if not pin_configurado:
+                error = "O ajuste de valores está temporariamente desativado."
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+            if desconto_pin != pin_configurado:
+                error = "PIN inválido. O ajuste não foi aplicado."
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
+            if desconto_tipo not in ("desconto", "acrescimo") or not 0 < desconto_valor <= 99:
+                error = "Informe um tipo de ajuste e percentual entre 0,1% e 99%."
+                return render_template("index.html", error=error, success=success, warning=warning, pdf_filename=pdf_filename)
             mult = (1 - desconto_valor / 100) if desconto_tipo == "desconto" else (1 + desconto_valor / 100)
             for plano in ["Plano Ouro", "Diamante", "Platinum", "Pesados"]:
                 if plano in precos_info and isinstance(precos_info[plano], (int, float)):
@@ -269,6 +419,8 @@ def index():
             "valor_fipe": valor_fipe,
             "categoria": categoria,
             "veiculo_pesado": veiculo_pesado,
+            "codigo_fipe": fipe_dados["codigo_fipe"] if fipe_dados else "",
+            "referencia_fipe": fipe_dados["referencia"] if fipe_dados else "",
             "precos": precos_info
         }
 
@@ -281,9 +433,8 @@ def index():
         limpar_pdfs_antigos(app.config["OUTPUT_DIR"])
 
         # Gerar nomes de arquivo únicos
-        unique_id = str(uuid.uuid4())[:8]
-        safe_placa = placa.replace(' ', '_').replace('/', '_').replace('-', '')
-        output_pdf_filename = f"cotacao_{safe_placa}_{unique_id}.pdf"
+        unique_id = str(uuid.uuid4())
+        output_pdf_filename = f"cotacao_{unique_id}.pdf"
         output_pdf_path    = os.path.join(app.config["OUTPUT_DIR"], output_pdf_filename)
 
         # ── Geração do PDF via HTML + WeasyPrint ──────────────────────────
